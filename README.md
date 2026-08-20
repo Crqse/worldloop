@@ -198,6 +198,8 @@ Contributions welcome — writing a YAML scenario is the fastest on-ramp, see
 
 - 冯福 (Fu Feng), aka **cqq** — GitHub [@Crqse](https://github.com/Crqse) ·
   <1148395497@qq.com>
+- **Commercial licensing / custom development** — contact <1148395497@qq.com>.
+  MIT stays free for personal, academic & open-source use.
 
 ## License
 

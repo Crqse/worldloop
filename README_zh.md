@@ -171,6 +171,7 @@ Contributions welcome —— 从「写一个 YAML 场景」开始是最快上手
 
 - 冯福，昵称 **cqq** — GitHub [@Crqse](https://github.com/Crqse) ·
   <1148395497@qq.com>
+- **商业授权 / 定制开发** —— 联系 <1148395497@qq.com>。MIT 对个人、学术与开源用途保持免费。
 
 ## License
 
