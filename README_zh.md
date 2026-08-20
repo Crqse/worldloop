@@ -1,5 +1,13 @@
 [English](README.md) · [中文](README_zh.md)
 
+<p align="center">
+  <img alt="Python 3.10-3.12" src="https://img.shields.io/badge/Python-3.10--3.12-3776AB"/>
+  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-23aaff"/>
+  <img alt="deterministic replay" src="https://img.shields.io/badge/replay-deterministic-brightgreen"/>
+  <img alt="counterfactual branch" src="https://img.shields.io/badge/branch-counterfactual-blue"/>
+  <img alt="no training-gain claim" src="https://img.shields.io/badge/evidence-honest-lightgrey"/>
+</p>
+
 # WorldLoop
 
 **让 LLM 与 Agent 只做提议，由确定性世界裁决一切后果。**

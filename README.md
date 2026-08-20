@@ -1,24 +1,31 @@
 [English](README.md) · [中文](README_zh.md)
 
+<p align="center">
+  <img alt="Python 3.10-3.12" src="https://img.shields.io/badge/Python-3.10--3.12-3776AB"/>
+  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-23aaff"/>
+  <img alt="deterministic replay" src="https://img.shields.io/badge/replay-deterministic-brightgreen"/>
+  <img alt="counterfactual branch" src="https://img.shields.io/badge/branch-counterfactual-blue"/>
+  <img alt="no training-gain claim" src="https://img.shields.io/badge/evidence-honest-lightgrey"/>
+</p>
+
 # WorldLoop
 
-**Let LLMs & agents only *propose* — a deterministic world adjudicates every consequence.**
+## A deterministic world where agents propose and rules adjudicate.
 
-WorldLoop is an environment-authoritative multi-agent simulation and
-trajectory-data system. A model or policy submits candidate actions; the
-world performs legality checks, conflict handling, numerical settlement,
+Most agent frameworks carry state in the chat history — the model is
+proposer, judge, and record-keeper at once. WorldLoop carries state in a
+*deterministic world*: a policy or LLM only **submits** candidate actions;
+the world performs legality checks, conflict handling, numerical settlement,
 and state write-back. Every change is recorded as a verifiable state diff
 with a hash chain, so any trajectory can be **replayed, branched, and
 compared counterfactually**.
 
 ---
 
-## Why do you need a "world"?
+## Why a "world"?
 
-Mainstream agent frameworks carry state in the message history, so the model
-serves as proposer, judge, and record-keeper at once. That's fine for
-workflow orchestration, but for state-transition research it cannot answer
-three questions:
+For workflow orchestration, chat-history state is fine. For state-transition
+research it cannot answer three questions:
 
 1. **What actually happened in the world?** — who proposed what, what
    actually executed, and what was the settlement result.
@@ -31,7 +38,7 @@ WorldLoop turns these into a protocol:
 `observe S_t → propose → world validates & settles → write S_{t+1} →
 verify hash & invariants → record / replay / branch / export`.
 
-![single step chain](examples/assets/single_step_chain.svg)
+![single step chain](examples/assets/single_step_chain_en.svg)
 
 LLMs cannot directly modify energy, position, resource counts, or life and
 death — they only propose, and the world adjudicates.
