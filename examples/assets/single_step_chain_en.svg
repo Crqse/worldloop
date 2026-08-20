@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 560" font-family="'Segoe UI', -apple-system, 'Helvetica Neue', Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 600" font-family="'Segoe UI', -apple-system, 'Helvetica Neue', Arial, sans-serif">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 1 L 9 5 L 0 9 z" fill="#94a3b8"/>
@@ -18,77 +18,83 @@
 
   <!-- Node 1: Observe -->
   <g filter="url(#shadow)">
-    <rect x="70" y="130" width="170" height="158" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="70" y="130" width="170" height="174" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
     <circle cx="155" cy="180" r="26" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
     <!-- eye icon -->
     <path d="M 143 180 a 12 7 0 1 0 24 0 a 12 7 0 1 0 -24 0" fill="none" stroke="#2563eb" stroke-width="2"/>
     <circle cx="155" cy="180" r="4.5" fill="#2563eb"/>
-    <text x="155" y="240" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Observe</text>
-    <text x="155" y="260" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2563eb" font-family="Consolas, 'Courier New', monospace">S_t</text>
-    <text x="155" y="280" text-anchor="middle" font-size="12" fill="#64748b">Read the canonical world state</text>
+    <text x="155" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Observe</text>
+    <text x="155" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#2563eb" font-family="Consolas, 'Courier New', monospace">S_t</text>
+    <text x="155" y="286" text-anchor="middle" font-size="10.5" fill="#64748b">Read canonical</text>
+    <text x="155" y="301" text-anchor="middle" font-size="10.5" fill="#64748b">world state</text>
   </g>
 
   <!-- Node 2: Propose -->
   <g filter="url(#shadow)">
-    <rect x="264" y="130" width="170" height="158" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="264" y="130" width="170" height="174" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
     <circle cx="349" cy="180" r="26" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
     <!-- paper-plane icon -->
     <path d="M 336 190 L 349 171 L 362 190 L 349 184 z" fill="#d97706"/>
     <path d="M 336 190 L 362 190" stroke="#d97706" stroke-width="2"/>
-    <text x="349" y="240" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Propose</text>
-    <text x="349" y="260" text-anchor="middle" font-size="13.5" font-weight="600" fill="#d97706" font-family="Consolas, 'Courier New', monospace">ActionProposal</text>
-    <text x="349" y="280" text-anchor="middle" font-size="12" fill="#64748b">Policy / LLM submits a candidate action</text>
+    <text x="349" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Propose</text>
+    <text x="349" y="264" text-anchor="middle" font-size="12.5" font-weight="600" fill="#d97706" font-family="Consolas, 'Courier New', monospace">ActionProposal</text>
+    <text x="349" y="286" text-anchor="middle" font-size="10.5" fill="#64748b">Policy / LLM</text>
+    <text x="349" y="301" text-anchor="middle" font-size="10.5" fill="#64748b">submits candidate</text>
   </g>
 
   <!-- Node 3: Validate -->
   <g filter="url(#shadow)">
-    <rect x="458" y="130" width="170" height="158" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="458" y="130" width="170" height="174" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
     <circle cx="543" cy="180" r="26" fill="#f0fdfa" stroke="#0d9488" stroke-width="2"/>
     <!-- shield icon -->
     <path d="M 543 168 L 554 174 L 554 185 C 554 192 549 197 543 199 C 537 197 532 192 532 185 L 532 174 z" fill="none" stroke="#0d9488" stroke-width="2"/>
     <path d="M 538 183 L 542 187 L 549 179" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
-    <text x="543" y="240" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Validate</text>
-    <text x="543" y="260" text-anchor="middle" font-size="13.5" font-weight="600" fill="#0d9488" font-family="Consolas, 'Courier New', monospace">world rules</text>
-    <text x="543" y="280" text-anchor="middle" font-size="12" fill="#64748b">World checks legality · preconditions</text>
+    <text x="543" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Validate</text>
+    <text x="543" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#0d9488" font-family="Consolas, 'Courier New', monospace">world rules</text>
+    <text x="543" y="286" text-anchor="middle" font-size="10.5" fill="#64748b">Check legality</text>
+    <text x="543" y="301" text-anchor="middle" font-size="10.5" fill="#64748b">&amp; preconditions</text>
   </g>
 
   <!-- Node 4: Settle -->
   <g filter="url(#shadow)">
-    <rect x="652" y="130" width="170" height="158" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="652" y="130" width="170" height="174" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
     <circle cx="737" cy="180" r="26" fill="#f0fdfa" stroke="#0d9488" stroke-width="2"/>
     <!-- scale icon -->
     <path d="M 727 188 h 20" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
     <path d="M 737 180 v 8" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
     <path d="M 729 182 v 4 M 745 182 v 4" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
     <path d="M 729 182 L 724 178 M 745 182 L 750 178" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
-    <text x="737" y="240" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Settle</text>
-    <text x="737" y="260" text-anchor="middle" font-size="13.5" font-weight="600" fill="#0d9488" font-family="Consolas, 'Courier New', monospace">receipt</text>
-    <text x="737" y="280" text-anchor="middle" font-size="12" fill="#64748b">Settle energy · resources · relations</text>
+    <text x="737" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Settle</text>
+    <text x="737" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#0d9488" font-family="Consolas, 'Courier New', monospace">receipt</text>
+    <text x="737" y="286" text-anchor="middle" font-size="10.5" fill="#64748b">Energy · resource</text>
+    <text x="737" y="301" text-anchor="middle" font-size="10.5" fill="#64748b">· relations</text>
   </g>
 
   <!-- Node 5: Commit -->
   <g filter="url(#shadow)">
-    <rect x="846" y="130" width="170" height="158" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="846" y="130" width="170" height="174" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
     <circle cx="931" cy="180" r="26" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
     <!-- database icon -->
     <ellipse cx="931" cy="175" rx="12" ry="5" fill="none" stroke="#2563eb" stroke-width="2"/>
     <path d="M 919 175 v 10 a 12 5 0 0 0 24 0 v -10" fill="none" stroke="#2563eb" stroke-width="2"/>
     <path d="M 919 180 a 12 5 0 0 0 24 0" fill="none" stroke="#2563eb" stroke-width="2"/>
-    <text x="931" y="240" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Commit</text>
-    <text x="931" y="260" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2563eb" font-family="Consolas, 'Courier New', monospace">S_t+1</text>
-    <text x="931" y="280" text-anchor="middle" font-size="12" fill="#64748b">Write the next canonical state</text>
+    <text x="931" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Commit</text>
+    <text x="931" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#2563eb" font-family="Consolas, 'Courier New', monospace">S_t+1</text>
+    <text x="931" y="286" text-anchor="middle" font-size="10.5" fill="#64748b">Write next</text>
+    <text x="931" y="301" text-anchor="middle" font-size="10.5" fill="#64748b">canonical state</text>
   </g>
 
   <!-- Node 6: Verify -->
   <g filter="url(#shadow)">
-    <rect x="1040" y="130" width="170" height="158" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="1040" y="130" width="170" height="174" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
     <circle cx="1125" cy="180" r="26" fill="#f0fdf4" stroke="#059669" stroke-width="2"/>
     <!-- link icon -->
     <path d="M 1116 180 l 6 -6 a 5 5 0 0 1 7 0 l 4 4" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
     <path d="M 1134 180 l -6 6 a 5 5 0 0 1 -7 0 l -4 -4" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
-    <text x="1125" y="240" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Verify</text>
-    <text x="1125" y="260" text-anchor="middle" font-size="13.5" font-weight="600" fill="#059669" font-family="Consolas, 'Courier New', monospace">hash chain</text>
-    <text x="1125" y="280" text-anchor="middle" font-size="12" fill="#64748b">Verify hash · invariants · record</text>
+    <text x="1125" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Verify</text>
+    <text x="1125" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#059669" font-family="Consolas, 'Courier New', monospace">hash chain</text>
+    <text x="1125" y="286" text-anchor="middle" font-size="10.5" fill="#64748b">Hash · invariants</text>
+    <text x="1125" y="301" text-anchor="middle" font-size="10.5" fill="#64748b">· record trail</text>
   </g>
 
   <!-- ===================== arrows ===================== -->
@@ -99,11 +105,11 @@
   <line x1="1016" y1="209" x2="1034" y2="209" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
 
   <!-- ===================== bottom callout ===================== -->
-  <rect x="70" y="326" width="1140" height="112" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="640" y="358" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">LLMs only produce candidate actions — the deterministic world adjudicates every consequence</text>
-  <text x="640" y="388" text-anchor="middle" font-size="13.5" fill="#475569">unknown action &#8594; unrecognized_intent  &#183;  failed precondition &#8594; illegal_action</text>
-  <text x="640" y="412" text-anchor="middle" font-size="13.5" fill="#475569">every transition leaves a verifiable state diff &amp; hash</text>
+  <rect x="70" y="340" width="1140" height="112" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="640" y="372" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">LLMs only produce candidate actions — the deterministic world adjudicates every consequence</text>
+  <text x="640" y="402" text-anchor="middle" font-size="13.5" fill="#475569">unknown action &#8594; unrecognized_intent  &#183;  failed precondition &#8594; illegal_action</text>
+  <text x="640" y="426" text-anchor="middle" font-size="13.5" fill="#475569">every transition leaves a verifiable state diff &amp; hash</text>
 
   <!-- footer -->
-  <text x="640" y="470" text-anchor="middle" font-size="13" fill="#94a3b8">WorldLoop — environment-authoritative multi-agent simulation &amp; trajectory-data system · worldloop-kernel / scenarios / adapters / data</text>
+  <text x="640" y="484" text-anchor="middle" font-size="13" fill="#94a3b8">WorldLoop — environment-authoritative multi-agent simulation &amp; trajectory-data system · worldloop-kernel / scenarios / adapters / data</text>
 </svg>
