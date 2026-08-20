@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "worldloop-kernel"
+version = "0.1.3"
+description = "WorldLoop v2 independent transition micro-kernel: protocol, state, action, transition, recorder, validation, checkpoint, replay, branch."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "冯福", email = "1148395497@qq.com" }
+]
+keywords = ["world-model", "transition-system", "replay", "counterfactual", "multi-agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+jsonschema = ["jsonschema>=4.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+build = [
+    "build>=1.0",
+    "twine>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Crqse/worldloop"
+Documentation = "https://github.com/Crqse/worldloop#readme"
+Issues = "https://github.com/Crqse/worldloop/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+worldloop_kernel = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["worldloop_kernel"]
+branch = true

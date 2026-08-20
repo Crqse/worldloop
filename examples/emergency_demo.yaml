@@ -1,0 +1,159 @@
+# Example: emergency scheduling demo (public README showcase).
+#
+# This is a *showcase* scenario, not an experimental configuration.
+# It is tuned so a 4-role policy produces visually legible dynamics for
+# the public README animation and the CLI demo:
+#   - hazard_level rises deterministically (the demo policy injects a
+#     fixed +0.2/tick exogenous escalation instead of a stochastic rate)
+#   - REPAIR (leader) pushes hazard back down by -0.5 and restores facilities
+#   - every action spends energy through an explicit ``energy`` effect
+#     (v0.1 cost is informational; demo economics live in effects), and
+#     REST restores +3.0, so energy bars visibly rise and fall
+#   - roles: leader (repair), gatherer (collect), comms (communicate),
+#     patrol (move) — see ``examples/demo/emergency_demo.py``
+scenario:
+  scenario_id: emergency_demo
+  scenario_version: "0.1.0"
+  description: "Four-role emergency scheduling demo — leader repairs, gatherer collects, comms builds the comm network, patrol keeps moving; hazard escalates deterministically."
+  author: WorldLoop
+  tags: [emergency, scheduling, demo]
+
+time:
+  dt: 1.0
+  max_ticks: 40
+  deterministic: true
+
+space:
+  type: graph
+  node_ids: [base, zone_a, zone_b, zone_c, zone_d]
+  edges:
+    - [base, zone_a]
+    - [base, zone_b]
+    - [base, zone_c]
+    - [zone_a, zone_b]
+    - [zone_b, zone_c]
+    - [zone_c, zone_d]
+    - [zone_d, zone_a]
+  periodic: false
+
+fields:
+  enabled: true
+  channels:
+    - {name: hazard_level, dtype: float, unit: severity}
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: node, dtype: str}
+    - {name: load, dtype: float}
+    - {name: capacity, dtype: float}
+    - {name: alive, dtype: bool}
+  initial_count: 4
+  spawn_template:
+    energy_range: [20.0, 30.0]
+    node_dist: uniform
+
+relations:
+  enabled: true
+  edge_types: [route, communication]
+  directed: false
+
+registries:
+  enabled: true
+  registry_types: [resource, facility]
+  initial_entries:
+    - {entry_id: res_water_base, registry_type: resource, state: available, metadata: {node: base, amount: 10.0}}
+    - {entry_id: res_food_zone_a, registry_type: resource, state: available, metadata: {node: zone_a, amount: 8.0}}
+    - {entry_id: res_med_zone_c, registry_type: resource, state: available, metadata: {node: zone_c, amount: 5.0}}
+    - {entry_id: fac_clinic_zone_b, registry_type: facility, state: damaged, metadata: {node: zone_b}}
+    - {entry_id: fac_power_zone_d, registry_type: facility, state: damaged, metadata: {node: zone_d}}
+
+actions:
+  is_closed: true
+  actions:
+    - action_type: MOVE
+      description: "Move to an adjacent node (costs energy)."
+      params_schema:
+        target_node: str
+      effects:
+        - {target: entity, field: node, op: set, value: "$target_node"}
+        - {target: entity, field: energy, op: sub, value: 0.8}
+      cost: 0.8
+      preconditions:
+        - {kind: edge_exists, from: "$entity.node", to: "$target_node"}
+        - {kind: energy_above, value: 1.0}
+
+    - action_type: COLLECT
+      description: "Collect a resource from the current node into load."
+      params_schema:
+        entry_id: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: add, value: "$amount"}
+        - {target: registry, field: state, op: set, value: "depleted"}
+        - {target: entity, field: energy, op: sub, value: 0.5}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    - action_type: DELIVER
+      description: "Deliver load back to a stocked facility."
+      params_schema:
+        entry_id: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: sub, value: "$amount"}
+        - {target: registry, field: state, op: set, value: "stocked"}
+        - {target: entity, field: energy, op: sub, value: 0.5}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    - action_type: REPAIR
+      description: "Repair a damaged facility and lower hazard (costly)."
+      params_schema:
+        entry_id: str
+      effects:
+        - {target: registry, field: state, op: set, value: "operational"}
+        - {target: field, field: hazard_level, op: sub, value: 0.5}
+        - {target: entity, field: energy, op: sub, value: 3.0}
+      cost: 3.0
+      preconditions:
+        - {kind: energy_above, value: 2.0}
+
+    - action_type: COMMUNICATE
+      description: "Establish a communication edge to another agent."
+      params_schema:
+        target_agent: str
+      effects:
+        - {target: relation, field: communication, op: add, value: "$target_agent"}
+        - {target: entity, field: energy, op: sub, value: 1.0}
+      cost: 1.0
+      preconditions:
+        - {kind: energy_above, value: 2.0}
+
+    - action_type: REST
+      description: "Rest and recover a little energy."
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 1.0}
+      cost: 0.0
+      preconditions: []
+
+exogenous:
+  # Deterministic hazard is injected by the demo policy (see demo script);
+  # no stochastic rates here so the animation is reproducible tick-by-tick.
+  events: []
+  seed: 42
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []

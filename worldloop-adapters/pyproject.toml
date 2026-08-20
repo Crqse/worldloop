@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "worldloop-adapters"
+version = "0.1.3"
+description = "WorldLoop v2 external environment adapters: PettingZoo Parallel, Gymnasium, OpenEnv → kernel WorldProtocol."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "冯福", email = "1148395497@qq.com" }
+]
+keywords = ["world-model", "pettingzoo", "gymnasium", "adapter", "multi-agent", "rl"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "worldloop-kernel>=0.1.1",
+]
+
+[project.optional-dependencies]
+pettingzoo = [
+    "pettingzoo>=1.24",
+    "mpe2>=1.0",
+    "numpy>=1.24",
+]
+gymnasium = [
+    "gymnasium>=0.29",
+    "numpy>=1.24",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pettingzoo>=1.24",
+    "mpe2>=1.0",
+    "numpy>=1.24",
+]
+build = [
+    "build>=1.0",
+    "twine>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Crqse/worldloop"
+Documentation = "https://github.com/Crqse/worldloop#readme"
+Issues = "https://github.com/Crqse/worldloop/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+worldloop_adapters = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["worldloop_adapters"]
+branch = true

@@ -1,0 +1,83 @@
+# Example: graph + registry world (S-07 template)
+# A graph-structured scenario with object/tool registries.
+scenario:
+  scenario_id: graph_registry_v0
+  scenario_version: "0.1.0"
+  description: "Graph + registry world (M3 Gate template 3)."
+  author: WorldLoop
+  tags: [graph, registry, m3-template]
+
+time:
+  dt: 1.0
+  max_ticks: 50
+  deterministic: true
+
+space:
+  type: graph
+  node_ids: [n0, n1, n2, n3, n4]
+  edges:
+    - [n0, n1]
+    - [n1, n2]
+    - [n2, n3]
+    - [n3, n4]
+    - [n4, n0]
+  periodic: false
+
+fields:
+  enabled: false
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: node, dtype: str}
+    - {name: alive, dtype: bool}
+  initial_count: 3
+  spawn_template:
+    energy_range: [5.0, 15.0]
+    node_dist: uniform
+
+relations:
+  enabled: true
+  edge_types: [visibility, proximity]
+  directed: false
+
+registries:
+  enabled: true
+  registry_types: [object, tool, artifact]
+
+actions:
+  is_closed: true
+  actions:
+    - action_type: traverse
+      params_schema:
+        target_node: str
+      effects:
+        - {target: entity, field: node, op: set, value: "$target_node"}
+      cost: 1.0
+      preconditions:
+        - {kind: edge_exists, from: "$entity.node", to: "$target_node"}
+    - action_type: pick
+      params_schema:
+        registry_type: str
+        entry_id: str
+      effects:
+        - {target: registry, field: owner, op: set, value: "$entity.id"}
+      cost: 0.0
+      preconditions:
+        - {kind: registry_unowned, registry_type: "$registry_type", entry_id: "$entry_id"}
+
+exogenous:
+  events: []
+  seed: null
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []

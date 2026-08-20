@@ -1,0 +1,140 @@
+# Example: market exchange (M6 generalization contrast scenario).
+# Two-agent commodity exchange on a 3-node graph (market / farm / workshop).
+# Agents produce goods at the farm, trade with each other, consume registry
+# goods for energy, and save (rest) to recover.
+#
+# Structural contrast vs emergency_resource_v0:
+#   - agents:    2 vs 4
+#   - graph:     3 nodes (market/farm/workshop) vs 5 nodes
+#   - actions:   PRODUCE/TRADE/CONSUME/SAVE vs MOVE/COLLECT/DELIVER/SHARE/REPAIR/COMMUNICATE/REST
+#   - same three effect surfaces covered (field / graph / registry):
+#       field:    PRODUCE increases global production_rate
+#       graph:    TRADE adds trade relation edges
+#       registry: CONSUME mutates registry entry state (available → consumed)
+#
+# Four core action contracts: PRODUCE / TRADE / CONSUME / SAVE.
+scenario:
+  scenario_id: market_exchange_v0
+  scenario_version: "0.1.0"
+  description: "Two-agent commodity exchange demo (M6 generalization contrast)."
+  author: WorldLoop
+  tags: [market, exchange, m6-contrast]
+
+time:
+  dt: 1.0
+  max_ticks: 100
+  deterministic: true
+
+space:
+  type: graph
+  node_ids: [market, farm, workshop]
+  edges:
+    - [market, farm]
+    - [farm, workshop]
+    - [market, workshop]
+  periodic: false
+
+fields:
+  enabled: true
+  channels:
+    - {name: production_rate, dtype: float, unit: goods_per_tick}
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: node, dtype: str}
+    - {name: load, dtype: float}
+    - {name: capacity, dtype: float}
+    - {name: alive, dtype: bool}
+  initial_count: 2
+  spawn_template:
+    energy_range: [15.0, 25.0]
+    node_dist: uniform
+
+relations:
+  enabled: true
+  edge_types: [route, trade]
+  directed: false
+
+registries:
+  enabled: true
+  registry_types: [goods, order]
+  # Pre-existing commodity stockpiles so CONSUME has registry entries to
+  # operate on. Each entry starts "available" and is marked "consumed"
+  # by the CONSUME action.
+  initial_entries:
+    - {entry_id: goods_apple_market, registry_type: goods, state: available, metadata: {node: market, amount: 5.0}}
+    - {entry_id: goods_bread_workshop, registry_type: goods, state: available, metadata: {node: workshop, amount: 4.0}}
+
+actions:
+  is_closed: true
+  actions:
+    # PRODUCE: agent produces goods, increasing the global production_rate
+    # field and its own carried load, at the cost of energy.
+    # Failure mode: energy_below threshold (energy_above precondition fails).
+    - action_type: PRODUCE
+      params_schema: {}
+      effects:
+        - {target: field, field: production_rate, op: add, value: 1.0}
+        - {target: entity, field: load, op: add, value: 1.0}
+        - {target: entity, field: energy, op: sub, value: 1.0}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    # TRADE: agent transfers part of its load to another agent and opens
+    # a trade relation edge. v0.2: relation edge add resolves
+    # ``$target_agent`` as the destination, producing a non-zero graph
+    # delta. Cross-entity load transfer (target agent's load increase)
+    # is v0.3+ — v0.2 only decreases source load and adds the edge
+    # (mirrors emergency_resource SHARE contract).
+    # Failure mode: energy_below threshold.
+    - action_type: TRADE
+      params_schema:
+        target_agent: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: sub, value: "$amount"}
+        - {target: relation, field: trade, op: add, value: "$target_agent"}
+      cost: 0.2
+      preconditions:
+        - {kind: energy_above, value: 0.5}
+
+    # CONSUME: agent consumes a registry goods entry, marking it
+    # "consumed" and regaining energy.
+    # Failure mode: energy_below threshold.
+    - action_type: CONSUME
+      params_schema:
+        entry_id: str
+      effects:
+        - {target: registry, field: state, op: set, value: "consumed"}
+        - {target: entity, field: energy, op: add, value: 2.0}
+      cost: 0.3
+      preconditions:
+        - {kind: energy_above, value: 0.5}
+
+    # SAVE: agent rests to regain energy. No preconditions.
+    # Always succeeds (provides success samples for entity delta).
+    - action_type: SAVE
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 2.0}
+      cost: 0.0
+      preconditions: []
+
+exogenous:
+  events:
+    - {kind: demand_pulse, rate: 0.1}
+  seed: 42
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []

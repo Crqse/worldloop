@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "worldloop-data"
+version = "0.1.3"
+description = "WorldLoop v2 Phase G (M4): autonomous trajectory production pipeline — policy pool, coverage scheduler, counterfactual brancher, dataset exporter, leakage checker, quality reporter."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "冯福", email = "1148395497@qq.com" }]
+keywords = ["world-model", "dataset", "trajectory", "counterfactual", "coverage", "multi-agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "worldloop-kernel>=0.1.1",
+    "worldloop-scenarios>=0.1.1",
+]
+
+[project.optional-dependencies]
+# External-environment pipeline path (B4). worldloop-adapters is a local
+# sibling package (not yet on PyPI); test environments install it locally
+# (pip install -e ../worldloop-adapters). worldloop_data core NEVER imports
+# it — only the external runner script and optional tests do.
+external = [
+    "worldloop-adapters>=0.1.1",
+]
+# M8 evaluation harness (worldloop_data.evaluation) imports numpy at module
+# level; xgboost is a lazy optional import inside baselines (falls back if
+# absent). Discovered by the Phase 7 clean-venv install smoke.
+evaluation = [
+    "numpy>=1.24",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "build>=1.0",
+]
+build = [
+    "build>=1.0",
+    "twine>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Crqse/worldloop"
+Documentation = "https://github.com/Crqse/worldloop#readme"
+Issues = "https://github.com/Crqse/worldloop/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+worldloop_data = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["worldloop_data"]
+branch = true

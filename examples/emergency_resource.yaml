@@ -1,0 +1,178 @@
+# Example: emergency resource scheduling (M5 §15 demo scenario)
+# Multi-agent disaster response: agents move between zones, collect resources
+# from stockpiles, deliver to affected zones, share with other agents,
+# repair damaged facilities, and communicate to coordinate.
+#
+# This spec exercises all three effect surfaces (field / graph / registry):
+#   - field:    REPAIR reduces global hazard_level
+#   - graph:    SHARE / COMMUNICATE add communication relation edges
+#   - registry: COLLECT / DELIVER / REPAIR mutate registry entry state
+#
+# Six core action contracts (D-02): MOVE / COLLECT / DELIVER / SHARE
+# / REPAIR / COMMUNICATE. REST is optional (energy regeneration).
+scenario:
+  scenario_id: emergency_resource_v0
+  scenario_version: "0.1.0"
+  description: "Multi-agent emergency resource scheduling demo (M5 §15)."
+  author: WorldLoop
+  tags: [emergency, resource, scheduling, m5-demo]
+
+time:
+  dt: 1.0
+  max_ticks: 100
+  deterministic: true
+
+space:
+  type: graph
+  node_ids: [base, zone_a, zone_b, zone_c, zone_d]
+  edges:
+    - [base, zone_a]
+    - [base, zone_b]
+    - [base, zone_c]
+    - [zone_a, zone_b]
+    - [zone_b, zone_c]
+    - [zone_c, zone_d]
+    - [zone_d, zone_a]
+  periodic: false
+
+fields:
+  enabled: true
+  channels:
+    - {name: hazard_level, dtype: float, unit: severity}
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: node, dtype: str}
+    - {name: load, dtype: float}
+    - {name: capacity, dtype: float}
+    - {name: alive, dtype: bool}
+  initial_count: 4
+  spawn_template:
+    energy_range: [20.0, 40.0]
+    node_dist: uniform
+
+relations:
+  enabled: true
+  edge_types: [route, communication]
+  directed: false
+
+registries:
+  enabled: true
+  registry_types: [resource, facility, message]
+  # M5 v0.2: pre-existing stockpiles and damaged facilities so that
+  # COLLECT / DELIVER / REPAIR have registry entries to operate on.
+  initial_entries:
+    - {entry_id: res_water_base, registry_type: resource, state: available, metadata: {node: base, amount: 10.0}}
+    - {entry_id: res_food_zone_a, registry_type: resource, state: available, metadata: {node: zone_a, amount: 8.0}}
+    - {entry_id: res_med_zone_c, registry_type: resource, state: available, metadata: {node: zone_c, amount: 5.0}}
+    - {entry_id: fac_clinic_zone_b, registry_type: facility, state: damaged, metadata: {node: zone_b}}
+    - {entry_id: fac_power_zone_d, registry_type: facility, state: damaged, metadata: {node: zone_d}}
+
+actions:
+  is_closed: true
+  actions:
+    # MOVE: agent traverses to an adjacent node along a route edge.
+    # Failure mode: target_node not adjacent (edge_exists precondition fails).
+    - action_type: MOVE
+      params_schema:
+        target_node: str
+      effects:
+        - {target: entity, field: node, op: set, value: "$target_node"}
+      cost: 1.0
+      preconditions:
+        - {kind: edge_exists, from: "$entity.node", to: "$target_node"}
+
+    # COLLECT: agent picks up resources from a stockpile (registry entry
+    # of type "resource"). Increases own load, marks stockpile as depleted.
+    # Failure mode: energy_below threshold (energy_above precondition fails).
+    - action_type: COLLECT
+      params_schema:
+        entry_id: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: add, value: "$amount"}
+        - {target: registry, field: state, op: set, value: "depleted"}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    # DELIVER: agent drops load at a facility (registry entry of type
+    # "facility"). Decreases own load, marks facility as stocked.
+    # Failure mode: energy_below threshold.
+    - action_type: DELIVER
+      params_schema:
+        entry_id: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: sub, value: "$amount"}
+        - {target: registry, field: state, op: set, value: "stocked"}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    # SHARE: agent transfers part of its load to another agent and opens
+    # a communication channel. v0.2: relation edge add resolves
+    # ``$target_agent`` as the destination, producing a non-zero graph
+    # delta. Cross-entity load transfer (target agent's load increase)
+    # is v0.3+ — v0.2 only decreases source load and adds the edge.
+    # Failure mode: energy_below threshold.
+    - action_type: SHARE
+      params_schema:
+        target_agent: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: sub, value: "$amount"}
+        - {target: relation, field: communication, op: add, value: "$target_agent"}
+      cost: 0.2
+      preconditions:
+        - {kind: energy_above, value: 0.5}
+
+    # REPAIR: agent repairs a damaged facility (registry entry of type
+    # "facility"), reducing the global hazard level.
+    # Failure mode: energy_below threshold (higher cost — 2.0).
+    - action_type: REPAIR
+      params_schema:
+        entry_id: str
+      effects:
+        - {target: registry, field: state, op: set, value: "operational"}
+        - {target: field, field: hazard_level, op: sub, value: 0.5}
+      cost: 1.5
+      preconditions:
+        - {kind: energy_above, value: 2.0}
+
+    # COMMUNICATE: agent broadcasts a message to another agent, adding
+    # a communication relation edge. Cheap action, no preconditions.
+    # Always succeeds (provides success samples for graph delta).
+    - action_type: COMMUNICATE
+      params_schema:
+        target_agent: str
+      effects:
+        - {target: relation, field: communication, op: add, value: "$target_agent"}
+      cost: 0.1
+      preconditions: []
+
+    # REST (optional): agent rests to regain energy. No preconditions.
+    - action_type: REST
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 2.0}
+      cost: 0.0
+      preconditions: []
+
+exogenous:
+  events:
+    - {kind: hazard_escalation, rate: 0.1}
+  seed: 42
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []

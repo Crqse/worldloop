@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WorldLoop · Emergency Scheduling Demo</title>
+<style>
+  :root {
+    --bg: #0b1220; --panel: #111a2e; --panel2: #0f172a;
+    --text: #e2e8f0; --muted: #94a3b8; --line: #1e293b;
+    --accent: #38bdf8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: radial-gradient(1200px 600px at 20% -10%, #16233d 0%, var(--bg) 55%);
+    color: var(--text); font-family: 'Segoe UI', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+  }
+  h1 { font-size: 22px; margin: 0 0 2px; letter-spacing: .2px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .app {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px 22px 18px; max-width: 860px; width: 100%; box-shadow: 0 18px 50px rgba(0,0,0,.35);
+  }
+  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .hazard-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .hazard-track { flex: 1; height: 16px; background: #1e293b; border-radius: 8px; overflow: hidden; position: relative; }
+  .hazard-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f59e0b, #ef4444); transition: width .25s; }
+  .hazard-val { font-variant-numeric: tabular-nums; color: #f87171; font-weight: 700; min-width: 44px; text-align: right; }
+  .tick-val { color: var(--accent); font-weight: 700; min-width: 76px; font-variant-numeric: tabular-nums; }
+  canvas { display: block; width: 100%; height: auto; background: var(--panel2);
+           border: 1px solid var(--line); border-radius: 12px; }
+  .controls { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  button {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 16px; font-size: 13px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  #scrub { flex: 1; accent-color: var(--accent); }
+  .panel-row { display: flex; gap: 18px; margin-top: 14px; }
+  .panel { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px;
+           padding: 10px 14px; font-size: 12px; color: var(--muted); flex: 1; min-width: 0; }
+  .panel b { color: var(--text); }
+  .act { font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; color: #7dd3fc; }
+  .ok { color: #4ade80; } .warn { color: #fbbf24; } .dead { color: #64748b; text-decoration: line-through; }
+</style>
+</head>
+<body>
+  <h1>WorldLoop · Emergency Scheduling</h1>
+  <div class="sub">model proposes, the world adjudicates — four roles vs a rising hazard gauge</div>
+
+  <div class="app">
+    <div class="topbar">
+      <span class="hazard-label">hazard</span>
+      <div class="hazard-track"><div class="hazard-fill" id="hazardFill"></div></div>
+      <span class="hazard-val" id="hazardVal">0.00</span>
+      <span class="tick-val" id="tickVal">tick 0 / 40</span>
+    </div>
+
+    <canvas id="stage" width="820" height="500"></canvas>
+
+    <div class="controls">
+      <button id="playBtn">▶ Play</button>
+      <button id="prevBtn">−</button>
+      <input type="range" id="scrub" min="0" max="39" value="0">
+      <button id="nextBtn">+</button>
+      <span class="tick-val" id="hashVal" style="min-width:130px;font-size:11px;color:var(--muted)"></span>
+    </div>
+
+    <div class="panel-row">
+      <div class="panel" id="agentPanel"></div>
+      <div class="panel" id="worldPanel"></div>
+      <div class="panel" id="actionPanel"></div>
+    </div>
+  </div>
+
+<script>
+const TIMELINE = {"scenario": "emergency_demo", "max_ticks": 40, "frames": [{"tick": 0, "hazard": 0.25, "comm_edges": 1, "state_hash": "sha256:e6d35", "agents": {"e0": {"node": "zone_b", "energy": 25.59, "alive": true}, "e1": {"node": "zone_a", "energy": 26.92, "alive": true}, "e2": {"node": "base", "energy": 21.23, "alive": true}, "e3": {"node": "zone_c", "energy": 25.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "damaged", "fac_power_zone_d": "damaged", "res_food_zone_a": "depleted", "res_med_zone_c": "available", "res_water_base": "available"}, "actions": [["e0", "MOVE"], ["e1", "COLLECT"], ["e2", "COMMUNICATE"], ["e3", "MOVE"]]}, {"tick": 1, "hazard": 0.0, "comm_edges": 2, "state_hash": "sha256:56c3b", "agents": {"e0": {"node": "zone_b", "energy": 22.59, "alive": true}, "e1": {"node": "base", "energy": 26.12, "alive": true}, "e2": {"node": "base", "energy": 20.23, "alive": true}, "e3": {"node": "base", "energy": 25.17, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "damaged", "res_food_zone_a": "depleted", "res_med_zone_c": "available", "res_water_base": "available"}, "actions": [["e0", "REPAIR"], ["e1", "MOVE"], ["e2", "COMMUNICATE"], ["e3", "MOVE"]]}, {"tick": 2, "hazard": 0.25, "comm_edges": 3, "state_hash": "sha256:dc6d4", "agents": {"e0": {"node": "zone_a", "energy": 21.79, "alive": true}, "e1": {"node": "zone_c", "energy": 25.32, "alive": true}, "e2": {"node": "base", "energy": 19.23, "alive": true}, "e3": {"node": "zone_b", "energy": 24.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "damaged", "res_food_zone_a": "depleted", "res_med_zone_c": "available", "res_water_base": "available"}, "actions": [["e0", "MOVE"], ["e1", "MOVE"], ["e2", "COMMUNICATE"], ["e3", "MOVE"]]}, {"tick": 3, "hazard": 0.5, "comm_edges": 3, "state_hash": "sha256:07faa", "agents": {"e0": {"node": "zone_d", "energy": 20.99, "alive": true}, "e1": {"node": "zone_c", "energy": 24.82, "alive": true}, "e2": {"node": "zone_a", "energy": 18.43, "alive": true}, "e3": {"node": "zone_c", "energy": 23.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "damaged", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "available"}, "actions": [["e0", "MOVE"], ["e1", "COLLECT"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 4, "hazard": 0.25, "comm_edges": 3, "state_hash": "sha256:739d4", "agents": {"e0": {"node": "zone_d", "energy": 17.99, "alive": true}, "e1": {"node": "base", "energy": 24.02, "alive": true}, "e2": {"node": "zone_a", "energy": 19.43, "alive": true}, "e3": {"node": "zone_d", "energy": 22.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "available"}, "actions": [["e0", "REPAIR"], ["e1", "MOVE"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 5, "hazard": 0.5, "comm_edges": 3, "state_hash": "sha256:acb1e", "agents": {"e0": {"node": "zone_c", "energy": 17.19, "alive": true}, "e1": {"node": "base", "energy": 23.52, "alive": true}, "e2": {"node": "zone_b", "energy": 18.63, "alive": true}, "e3": {"node": "zone_c", "energy": 21.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "MOVE"], ["e1", "COLLECT"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 6, "hazard": 0.75, "comm_edges": 3, "state_hash": "sha256:9b5ed", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "zone_c", "energy": 22.72, "alive": true}, "e2": {"node": "zone_c", "energy": 17.83, "alive": true}, "e3": {"node": "base", "energy": 21.17, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "MOVE"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 7, "hazard": 1.0, "comm_edges": 3, "state_hash": "sha256:b6fb4", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "base", "energy": 21.92, "alive": true}, "e2": {"node": "zone_c", "energy": 17.03, "alive": true}, "e3": {"node": "zone_b", "energy": 20.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 8, "hazard": 0.75, "comm_edges": 3, "state_hash": "sha256:b63bb", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 22.92, "alive": true}, "e2": {"node": "zone_c", "energy": 18.03, "alive": true}, "e3": {"node": "zone_c", "energy": 19.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "REST"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 9, "hazard": 1.0, "comm_edges": 3, "state_hash": "sha256:4ef49", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "zone_a", "energy": 22.12, "alive": true}, "e2": {"node": "zone_d", "energy": 17.23, "alive": true}, "e3": {"node": "zone_d", "energy": 18.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 10, "hazard": 1.25, "comm_edges": 3, "state_hash": "sha256:8dcc6", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "base", "energy": 21.32, "alive": true}, "e2": {"node": "zone_c", "energy": 16.43, "alive": true}, "e3": {"node": "zone_c", "energy": 17.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 11, "hazard": 1.5, "comm_edges": 3, "state_hash": "sha256:22783", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "base", "energy": 20.52, "alive": true}, "e2": {"node": "base", "energy": 15.63, "alive": true}, "e3": {"node": "base", "energy": 17.17, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 12, "hazard": 1.25, "comm_edges": 3, "state_hash": "sha256:5a4cf", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 21.52, "alive": true}, "e2": {"node": "base", "energy": 16.63, "alive": true}, "e3": {"node": "zone_b", "energy": 16.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "REST"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 13, "hazard": 1.5, "comm_edges": 3, "state_hash": "sha256:a6c19", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "zone_a", "energy": 20.72, "alive": true}, "e2": {"node": "zone_a", "energy": 15.83, "alive": true}, "e3": {"node": "zone_c", "energy": 15.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 14, "hazard": 1.75, "comm_edges": 3, "state_hash": "sha256:580ac", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "base", "energy": 19.92, "alive": true}, "e2": {"node": "zone_b", "energy": 15.03, "alive": true}, "e3": {"node": "zone_d", "energy": 14.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 15, "hazard": 2.0, "comm_edges": 3, "state_hash": "sha256:2dd35", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "zone_b", "energy": 19.12, "alive": true}, "e2": {"node": "zone_b", "energy": 14.23, "alive": true}, "e3": {"node": "zone_c", "energy": 13.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 16, "hazard": 1.75, "comm_edges": 3, "state_hash": "sha256:dbcab", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 18.32, "alive": true}, "e2": {"node": "zone_b", "energy": 15.23, "alive": true}, "e3": {"node": "base", "energy": 13.17, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "MOVE"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 17, "hazard": 2.0, "comm_edges": 3, "state_hash": "sha256:ccaf3", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "zone_c", "energy": 17.52, "alive": true}, "e2": {"node": "zone_c", "energy": 14.43, "alive": true}, "e3": {"node": "zone_b", "energy": 12.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 18, "hazard": 2.25, "comm_edges": 3, "state_hash": "sha256:f2f01", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "base", "energy": 16.72, "alive": true}, "e2": {"node": "zone_d", "energy": 13.63, "alive": true}, "e3": {"node": "zone_c", "energy": 11.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 19, "hazard": 2.5, "comm_edges": 3, "state_hash": "sha256:25156", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "zone_a", "energy": 15.92, "alive": true}, "e2": {"node": "zone_d", "energy": 12.83, "alive": true}, "e3": {"node": "zone_d", "energy": 10.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 20, "hazard": 2.25, "comm_edges": 3, "state_hash": "sha256:89c13", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 15.12, "alive": true}, "e2": {"node": "zone_d", "energy": 13.83, "alive": true}, "e3": {"node": "zone_c", "energy": 9.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "MOVE"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 21, "hazard": 2.5, "comm_edges": 3, "state_hash": "sha256:9b069", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "base", "energy": 14.32, "alive": true}, "e2": {"node": "zone_c", "energy": 13.03, "alive": true}, "e3": {"node": "base", "energy": 9.17, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 22, "hazard": 2.75, "comm_edges": 3, "state_hash": "sha256:bb6b1", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "zone_a", "energy": 13.52, "alive": true}, "e2": {"node": "base", "energy": 12.23, "alive": true}, "e3": {"node": "zone_b", "energy": 8.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 23, "hazard": 3.0, "comm_edges": 3, "state_hash": "sha256:60422", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "base", "energy": 12.72, "alive": true}, "e2": {"node": "zone_a", "energy": 11.43, "alive": true}, "e3": {"node": "zone_c", "energy": 7.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 24, "hazard": 2.75, "comm_edges": 3, "state_hash": "sha256:2c4e7", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 13.72, "alive": true}, "e2": {"node": "zone_a", "energy": 12.43, "alive": true}, "e3": {"node": "zone_d", "energy": 6.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "REST"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 25, "hazard": 3.0, "comm_edges": 3, "state_hash": "sha256:41fd3", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "zone_b", "energy": 12.92, "alive": true}, "e2": {"node": "zone_b", "energy": 11.63, "alive": true}, "e3": {"node": "zone_c", "energy": 5.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 26, "hazard": 3.25, "comm_edges": 3, "state_hash": "sha256:78eae", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "base", "energy": 12.12, "alive": true}, "e2": {"node": "zone_c", "energy": 10.83, "alive": true}, "e3": {"node": "base", "energy": 5.17, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 27, "hazard": 3.5, "comm_edges": 3, "state_hash": "sha256:2704c", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "zone_c", "energy": 11.32, "alive": true}, "e2": {"node": "zone_c", "energy": 10.03, "alive": true}, "e3": {"node": "zone_b", "energy": 4.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 28, "hazard": 3.25, "comm_edges": 3, "state_hash": "sha256:8d41c", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 10.52, "alive": true}, "e2": {"node": "zone_c", "energy": 11.03, "alive": true}, "e3": {"node": "zone_c", "energy": 3.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "MOVE"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 29, "hazard": 3.5, "comm_edges": 3, "state_hash": "sha256:17355", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "zone_a", "energy": 9.72, "alive": true}, "e2": {"node": "zone_d", "energy": 10.23, "alive": true}, "e3": {"node": "zone_c", "energy": 4.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "REST"]]}, {"tick": 30, "hazard": 3.75, "comm_edges": 3, "state_hash": "sha256:5c700", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "base", "energy": 8.92, "alive": true}, "e2": {"node": "zone_c", "energy": 9.43, "alive": true}, "e3": {"node": "base", "energy": 3.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 31, "hazard": 4.0, "comm_edges": 3, "state_hash": "sha256:dbaf6", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "base", "energy": 8.12, "alive": true}, "e2": {"node": "base", "energy": 8.63, "alive": true}, "e3": {"node": "base", "energy": 4.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "REST"]]}, {"tick": 32, "hazard": 3.75, "comm_edges": 3, "state_hash": "sha256:891f5", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 9.12, "alive": true}, "e2": {"node": "base", "energy": 9.63, "alive": true}, "e3": {"node": "zone_b", "energy": 3.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "REST"], ["e2", "REST"], ["e3", "MOVE"]]}, {"tick": 33, "hazard": 4.0, "comm_edges": 3, "state_hash": "sha256:faa8e", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "zone_a", "energy": 8.32, "alive": true}, "e2": {"node": "zone_a", "energy": 8.83, "alive": true}, "e3": {"node": "zone_b", "energy": 4.97, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "REST"]]}, {"tick": 34, "hazard": 4.25, "comm_edges": 3, "state_hash": "sha256:313e9", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "base", "energy": 7.52, "alive": true}, "e2": {"node": "zone_b", "energy": 8.03, "alive": true}, "e3": {"node": "zone_a", "energy": 4.17, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 35, "hazard": 4.5, "comm_edges": 3, "state_hash": "sha256:6ac3e", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "zone_b", "energy": 6.72, "alive": true}, "e2": {"node": "zone_b", "energy": 7.23, "alive": true}, "e3": {"node": "base", "energy": 3.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 36, "hazard": 4.25, "comm_edges": 3, "state_hash": "sha256:476a3", "agents": {"e0": {"node": "zone_b", "energy": 14.39, "alive": true}, "e1": {"node": "base", "energy": 5.92, "alive": true}, "e2": {"node": "zone_b", "energy": 8.23, "alive": true}, "e3": {"node": "base", "energy": 4.37, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REPAIR"], ["e1", "MOVE"], ["e2", "REST"], ["e3", "REST"]]}, {"tick": 37, "hazard": 4.5, "comm_edges": 3, "state_hash": "sha256:08a25", "agents": {"e0": {"node": "zone_b", "energy": 15.39, "alive": true}, "e1": {"node": "zone_c", "energy": 5.12, "alive": true}, "e2": {"node": "zone_c", "energy": 7.43, "alive": true}, "e3": {"node": "zone_b", "energy": 3.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}, {"tick": 38, "hazard": 4.75, "comm_edges": 3, "state_hash": "sha256:03676", "agents": {"e0": {"node": "zone_b", "energy": 16.39, "alive": true}, "e1": {"node": "base", "energy": 4.32, "alive": true}, "e2": {"node": "zone_d", "energy": 6.63, "alive": true}, "e3": {"node": "zone_b", "energy": 4.57, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "REST"]]}, {"tick": 39, "hazard": 5.0, "comm_edges": 3, "state_hash": "sha256:0117f", "agents": {"e0": {"node": "zone_b", "energy": 17.39, "alive": true}, "e1": {"node": "zone_a", "energy": 3.52, "alive": true}, "e2": {"node": "zone_d", "energy": 5.83, "alive": true}, "e3": {"node": "zone_a", "energy": 3.77, "alive": true}}, "registry": {"fac_clinic_zone_b": "operational", "fac_power_zone_d": "operational", "res_food_zone_a": "depleted", "res_med_zone_c": "depleted", "res_water_base": "depleted"}, "actions": [["e0", "REST"], ["e1", "MOVE"], ["e2", "MOVE"], ["e3", "MOVE"]]}]};
+const NODE_POS = {"base": [0.5, 0.82], "zone_a": [0.14, 0.52], "zone_b": [0.34, 0.14], "zone_c": [0.66, 0.14], "zone_d": [0.86, 0.52]};
+const EDGES = [["base", "zone_a"], ["base", "zone_b"], ["base", "zone_c"], ["zone_a", "zone_b"], ["zone_b", "zone_c"], ["zone_c", "zone_d"], ["zone_d", "zone_a"]];
+const AGENT_STYLE = {"e0": {"role": "leader", "label": "L", "color": "#3b82f6"}, "e1": {"role": "gatherer", "label": "G", "color": "#22c55e"}, "e2": {"role": "comms", "label": "C", "color": "#a855f7"}, "e3": {"role": "patrol", "label": "P", "color": "#f97316"}};
+const MAX_HAZARD = 10.0;
+
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const NX = (x) => 40 + x * (W - 80);
+const NY = (y) => 24 + y * (H - 120);
+
+let idx = 0, playing = false, timer = null;
+
+function draw() {
+  const f = TIMELINE.frames[idx];
+  const hazard = f.hazard;
+  document.getElementById('hazardFill').style.width = Math.min(100, hazard / MAX_HAZARD * 100) + '%';
+  document.getElementById('hazardVal').textContent = hazard.toFixed(2);
+  document.getElementById('tickVal').textContent = `tick ${f.tick} / ${TIMELINE.max_ticks}`;
+  document.getElementById('hashVal').textContent = `hash ${f.state_hash}`;
+  document.getElementById('scrub').value = idx;
+
+  ctx.clearRect(0, 0, W, H);
+  // route edges
+  for (const [a, b] of EDGES) {
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(NX(NODE_POS[a][0]), NY(NODE_POS[a][1]));
+    ctx.lineTo(NX(NODE_POS[b][0]), NY(NODE_POS[b][1])); ctx.stroke();
+  }
+  // communication edges between agents
+  const agents = f.agents;
+  const alive = Object.keys(agents).filter(e => agents[e].alive);
+  for (let i = 0; i < alive.length; i++) for (let j = i + 1; j < alive.length; j++) {
+    const A = agents[alive[i]], B = agents[alive[j]];
+    ctx.strokeStyle = 'rgba(245,158,11,.5)'; ctx.lineWidth = 1.6;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(NX(NODE_POS[A.node][0]), NY(NODE_POS[A.node][1]));
+    ctx.lineTo(NX(NODE_POS[B.node][0]), NY(NODE_POS[B.node][1])); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  // nodes (layered cards)
+  for (const [node, [x, y]] of Object.entries(NODE_POS)) {
+    // glow ring
+    ctx.beginPath(); ctx.arc(NX(x), NY(y), 34, 0, Math.PI * 2);
+    ctx.fillStyle = '#16233d'; ctx.fill();
+    // node body
+    ctx.beginPath(); ctx.arc(NX(x), NY(y), 27, 0, Math.PI * 2);
+    ctx.fillStyle = '#1e293b'; ctx.fill(); ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.6; ctx.stroke();
+    ctx.fillStyle = '#cbd5e1'; ctx.font = '600 13px Segoe UI'; ctx.textAlign = 'center';
+    ctx.fillText(node.replace('_', '.'), NX(x), NY(y) + 4);
+  }
+  // facility / resource chips (below node, reserved lane)
+  for (const [fid, st] of Object.entries(f.registry)) {
+    if (!fid.startsWith('fac_')) continue;
+    const node = Object.keys(NODE_POS).find(n => fid.includes(n));
+    if (!node) continue;
+    const [x, y] = NODE_POS[node];
+    ctx.fillStyle = st === 'damaged' ? '#ef4444' : '#22c55e';
+    roundRect(NX(x) - 30, NY(y) + 34, 60, 18, 5); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '700 10px Segoe UI'; ctx.textAlign = 'center';
+    ctx.fillText(st === 'damaged' ? 'damaged' : 'ok', NX(x), NY(y) + 46);
+  }
+  for (const [rid, st] of Object.entries(f.registry)) {
+    if (!rid.startsWith('res_')) continue;
+    const node = Object.keys(NODE_POS).find(n => rid.includes(n));
+    if (!node) continue;
+    const [x, y] = NODE_POS[node];
+    ctx.fillStyle = st === 'available' ? '#f59e0b' : '#475569';
+    roundRect(NX(x) - 30, NY(y) + 34, 60, 18, 5); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '700 10px Segoe UI'; ctx.textAlign = 'center';
+    ctx.fillText(st === 'available' ? 'res' : 'empty', NX(x), NY(y) + 46);
+  }
+  // agents (role tokens in an arc ABOVE the node — never overlaps node label
+  // or the facility/resource chip below)
+  const occ = {};
+  for (const eid of Object.keys(agents)) {
+    const info = agents[eid], style = AGENT_STYLE[eid];
+    const [x, y] = NODE_POS[info.node];
+    occ[info.node] = (occ[info.node] || 0) + 1;
+    const o = occ[info.node] - 1;
+    // spread horizontally so multiple agents on one node never overlap:
+    // token outer ring is 36px, so adjacent centers need >= 40px. Use a
+    // two-row layout when 3+ agents share a node (row 0: 2 agents, row 1: 1).
+    const row = Math.floor(o / 2);
+    const col = o % 2;
+    const rowCount = occ[info.node] > 2 ? 2 : 1;
+    const px = NX(x) + (col === 0 ? -22 : 22);
+    const py = NY(y) - 56 - row * 44;
+    if (!info.alive) {
+      ctx.beginPath(); ctx.arc(px, py, 15, 0, Math.PI * 2);
+      ctx.fillStyle = '#475569'; ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = '700 11px Segoe UI'; ctx.textAlign = 'center';
+      ctx.fillText('x', px, py + 4);
+      continue;
+    }
+    // white ring + colored body
+    ctx.beginPath(); ctx.arc(px, py, 18, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(px, py, 15, 0, Math.PI * 2);
+    ctx.fillStyle = style.color; ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '700 12px Segoe UI'; ctx.textAlign = 'center';
+    ctx.fillText(style.label, px, py + 4);
+    // energy bar (below the token, clear of the node circle)
+    const frac = Math.max(0, Math.min(1, info.energy / 30));
+    ctx.fillStyle = '#334155'; roundRect(px - 22, py + 26, 44, 7, 3); ctx.fill();
+    ctx.fillStyle = style.color; roundRect(px - 22, py + 26, 44 * frac, 7, 3); ctx.fill();
+  }
+
+  // panels
+  const agentHtml = Object.keys(agents).map(eid => {
+    const info = agents[eid], st = AGENT_STYLE[eid];
+    const cls = info.alive ? '' : 'dead';
+    return `<div class="${cls}"><b>${st.role}</b> ${eid} @ ${info.node} · E ${info.energy.toFixed(1)} ${info.alive ? '' : '(dead)'}</div>`;
+  }).join('');
+  document.getElementById('agentPanel').innerHTML = `<b>agents</b><br>${agentHtml}`;
+
+  const reg = Object.entries(f.registry).map(([k, v]) =>
+    `<span class="${v === 'damaged' || v === 'depleted' ? 'warn' : 'ok'}">${k}=${v}</span>`
+  ).join(' · ');
+  document.getElementById('worldPanel').innerHTML =
+    `<b>world</b> · comm ${f.comm_edges} edge(s)<br>${reg}`;
+
+  const acts = f.actions.map(a => `<span class="act">${a[0]}:${a[1]}</span>`).join(' &nbsp; ');
+  document.getElementById('actionPanel').innerHTML = `<b>this tick</b><br>${acts || '(no agents alive)'}`;
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function go(n) { idx = Math.max(0, Math.min(TIMELINE.frames.length - 1, n)); draw(); }
+function play() {
+  playing = !playing;
+  document.getElementById('playBtn').textContent = playing ? '❚❚ Pause' : '▶ Play';
+  if (playing) {
+    timer = setInterval(() => {
+      if (idx >= TIMELINE.frames.length - 1) { idx = 0; } else { idx++; }
+      draw();
+    }, 450);
+  } else if (timer) { clearInterval(timer); timer = null; }
+}
+
+document.getElementById('playBtn').addEventListener('click', play);
+document.getElementById('prevBtn').addEventListener('click', () => { go(idx - 1); });
+document.getElementById('nextBtn').addEventListener('click', () => { go(idx + 1); });
+document.getElementById('scrub').addEventListener('input', (e) => { go(parseInt(e.target.value)); });
+
+draw();
+</script>
+</body>
+</html>

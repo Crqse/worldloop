@@ -1,0 +1,197 @@
+# Example: market exchange v1 (M6 saturation fix).
+# v1 fixes 2 of 3 saturation problems observed in v0:
+#   1. edge_change_count saturation: v0 TRADE was the only edge-adding
+#      action and always succeeded (energy_above=0.5 trivially satisfied
+#      with energy_range [15.0, 25.0]). no_action could infer TRADE from
+#      target_agent_idx param → three-way MAE tied. v1 fixes this with
+#      TWO complementary changes:
+#        (a) PRODUCE now adds a "production" relation edge (agent →
+#            current node). PRODUCE has NO params, so no_action cannot
+#            distinguish PRODUCE (edge=1) from SAVE (edge=0) — both have
+#            has_params=0. XGBoost distinguishes via action_type →
+#            breaks the tie.
+#        (b) TRADE energy_above raised (0.5 → 5.0) + energy_range
+#            lowered ([15.0, 25.0] → [5.0, 12.0]). Agents deplete within
+#            ~5-10 actions, so TRADE becomes illegal when energy < 5.0.
+#            This creates temporal variation in edge_change_count.
+#   2. position_change saturation: v0 had no MOVE action → position
+#      never changed → accuracy trivially 1.0 for all baselines. v1
+#      adds a MOVE action with edge_exists + energy_above preconditions.
+#      Position now varies when MOVE is legal (energy >= 1.0 AND route
+#      exists between current node and target_node).
+#   3. executed_candidate_rank N/A: NOT fixed — spec layer cannot fix.
+#      ParameterizedWorld.step() always sets candidate_actions={} (single
+#      executed action per tick), so NDCG@3 stays N/A. This is a
+#      kernel/rollout concern, not a spec concern. ACCEPTANCE 1 (≥2/3)
+#      is still satisfied.
+#
+# v1 preserves v0's 2 strong targets:
+#   - energy_delta: still differentiable (different cost per action_type;
+#     MOVE adds a new cost=-0.5 bucket, learnable)
+#   - multi_step_energy_delta: still differentiable (cost sequences vary
+#     with energy state, giving full model an edge over no_action)
+#
+# Structural changes vs v0:
+#   - actions: 4 → 5 (PRODUCE/TRADE/CONSUME/SAVE + MOVE)
+#   - edge types: 2 → 4 (route, trade, production, travel)
+#   - energy_range: [15.0, 25.0] → [5.0, 12.0]
+#   - TRADE energy_above: 0.5 → 5.0
+scenario:
+  scenario_id: market_exchange_v1
+  scenario_version: "0.1.0"
+  description: "Two-agent commodity exchange v1 — fixes edge_change_count and position_change saturation."
+  author: WorldLoop
+  tags: [market, exchange, m6-saturation-fix]
+
+time:
+  dt: 1.0
+  max_ticks: 100
+  deterministic: true
+
+space:
+  type: graph
+  node_ids: [market, farm, workshop]
+  edges:
+    - [market, farm]
+    - [farm, workshop]
+    - [market, workshop]
+  periodic: false
+
+fields:
+  enabled: true
+  channels:
+    - {name: production_rate, dtype: float, unit: goods_per_tick}
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: node, dtype: str}
+    - {name: load, dtype: float}
+    - {name: capacity, dtype: float}
+    - {name: alive, dtype: bool}
+  initial_count: 2
+  spawn_template:
+    # v1: lowered from [15.0, 25.0] to [5.0, 12.0] so that agents
+    # deplete energy within ~5-10 actions, triggering TRADE failures
+    # (energy_above=5.0) and MOVE failures (energy_above=1.0). This
+    # produces both success (edge added / position changed) and failure
+    # (no edge / no change) samples within a single episode.
+    energy_range: [5.0, 12.0]
+    node_dist: uniform
+
+relations:
+  enabled: true
+  # v1: added "production" (PRODUCE edge) and "travel" (MOVE edge).
+  edge_types: [route, trade, production, travel]
+  directed: false
+
+registries:
+  enabled: true
+  registry_types: [goods, order]
+  initial_entries:
+    - {entry_id: goods_apple_market, registry_type: goods, state: available, metadata: {node: market, amount: 5.0}}
+    - {entry_id: goods_bread_workshop, registry_type: goods, state: available, metadata: {node: workshop, amount: 4.0}}
+
+actions:
+  is_closed: true
+  actions:
+    # PRODUCE v1: add a "production" relation edge (agent → current node).
+    # v0 PRODUCE had no relation effect → edge_change_count was 0 for
+    # PRODUCE, making it indistinguishable from SAVE for edge prediction.
+    # v1 makes PRODUCE add a production edge so edge_change_count=1 for
+    # PRODUCE. Since PRODUCE has NO params (has_params=0), no_action
+    # cannot distinguish PRODUCE (edge=1) from SAVE (edge=0) — both look
+    # identical without action_type features. XGBoost uses action_type
+    # to distinguish → beats no_action on PRODUCE/SAVE samples.
+    - action_type: PRODUCE
+      params_schema: {}
+      effects:
+        - {target: field, field: production_rate, op: add, value: 1.0}
+        - {target: entity, field: load, op: add, value: 1.0}
+        - {target: entity, field: energy, op: sub, value: 1.0}
+        - {target: relation, field: production, op: add, value: "$entity.node"}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    # TRADE v1: raise energy_above (0.5 → 5.0).
+    # v0 TRADE almost always succeeded (threshold 0.5, energy_range
+    # [15.0, 25.0]). v1 makes TRADE fail when energy < 5.0, so
+    # edge_change_count is no longer always 1 for TRADE. Combined with
+    # lower initial energy_range, agents deplete energy after a few
+    # actions, producing both success (edge added) and failure (no edge,
+    # TRADE not even legal) samples → three-way MAE becomes
+    # distinguishable. Effects unchanged (adds trade edge, decreases
+    # source load).
+    - action_type: TRADE
+      params_schema:
+        target_agent: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: sub, value: "$amount"}
+        - {target: relation, field: trade, op: add, value: "$target_agent"}
+      cost: 0.2
+      preconditions:
+        - {kind: energy_above, value: 5.0}
+
+    # CONSUME: unchanged from v0. Marks a registry goods entry as
+    # "consumed" and restores energy. No relation effect.
+    - action_type: CONSUME
+      params_schema:
+        entry_id: str
+      effects:
+        - {target: registry, field: state, op: set, value: "consumed"}
+        - {target: entity, field: energy, op: add, value: 2.0}
+      cost: 0.3
+      preconditions:
+        - {kind: energy_above, value: 0.5}
+
+    # SAVE: unchanged from v0. No preconditions, no params, no edge.
+    # Always succeeds (provides baseline energy_delta samples). Has
+    # has_params=0 like PRODUCE but adds NO edge — this contrast is the
+    # key to breaking edge_change_count saturation (no_action cannot
+    # distinguish PRODUCE from SAVE; XGBoost can).
+    - action_type: SAVE
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 2.0}
+      cost: 0.0
+      preconditions: []
+
+    # MOVE v1: NEW action. Agent moves to an adjacent node (edge_exists
+    # precondition), adding a "travel" relation edge and paying energy
+    # cost. Fixes position_change saturation (position now varies) and
+    # contributes to edge_change_count variance (MOVE adds travel edge,
+    # distinct from TRADE's trade edge and PRODUCE's production edge).
+    # Preconditions: route must exist between current node and target
+    # (edge_exists), and agent must have energy >= 1.0. When energy is
+    # depleted, MOVE is illegal → position unchanged → breaks the
+    # deterministic mapping (action_type → position_change).
+    - action_type: MOVE
+      params_schema:
+        target_node: str
+      effects:
+        - {target: entity, field: node, op: set, value: "$target_node"}
+        - {target: relation, field: travel, op: add, value: "$target_node"}
+        - {target: entity, field: energy, op: sub, value: 1.0}
+      cost: 0.5
+      preconditions:
+        - {kind: edge_exists, from: "$entity.node", to: "$target_node"}
+        - {kind: energy_above, value: 1.0}
+
+exogenous:
+  events:
+    - {kind: demand_pulse, rate: 0.1}
+  seed: 42
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []
