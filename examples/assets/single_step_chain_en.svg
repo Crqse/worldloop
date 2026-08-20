@@ -99,9 +99,10 @@
   <line x1="1016" y1="209" x2="1034" y2="209" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
 
   <!-- ===================== bottom callout ===================== -->
-  <rect x="70" y="330" width="1140" height="96" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="640" y="364" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">LLMs only produce candidate actions — the deterministic world adjudicates every consequence</text>
-  <text x="640" y="392" text-anchor="middle" font-size="13.5" fill="#475569">Unknown action -> unrecognized_intent  ·  failed precondition -> illegal_action  ·  every transition leaves a verifiable state diff &amp; hash</text>
+  <rect x="70" y="326" width="1140" height="112" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="640" y="358" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">LLMs only produce candidate actions — the deterministic world adjudicates every consequence</text>
+  <text x="640" y="388" text-anchor="middle" font-size="13.5" fill="#475569">unknown action &#8594; unrecognized_intent  &#183;  failed precondition &#8594; illegal_action</text>
+  <text x="640" y="412" text-anchor="middle" font-size="13.5" fill="#475569">every transition leaves a verifiable state diff &amp; hash</text>
 
   <!-- footer -->
   <text x="640" y="470" text-anchor="middle" font-size="13" fill="#94a3b8">WorldLoop — environment-authoritative multi-agent simulation &amp; trajectory-data system · worldloop-kernel / scenarios / adapters / data</text>
