@@ -25,8 +25,7 @@
     <circle cx="155" cy="180" r="4.5" fill="#2563eb"/>
     <text x="155" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">观察</text>
     <text x="155" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#2563eb" font-family="Consolas, 'Courier New', monospace">S_t</text>
-    <text x="155" y="286" text-anchor="middle" font-size="11" fill="#64748b">读取正式</text>
-    <text x="155" y="302" text-anchor="middle" font-size="11" fill="#64748b">世界状态</text>
+    <text x="155" y="292" text-anchor="middle" font-size="12" fill="#64748b">读取正式世界状态</text>
   </g>
 
   <!-- Node 2: Propose -->
@@ -38,8 +37,7 @@
     <path d="M 336 190 L 362 190" stroke="#d97706" stroke-width="2"/>
     <text x="349" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">提议</text>
     <text x="349" y="264" text-anchor="middle" font-size="12.5" font-weight="600" fill="#d97706" font-family="Consolas, 'Courier New', monospace">ActionProposal</text>
-    <text x="349" y="286" text-anchor="middle" font-size="11" fill="#64748b">策略 / LLM</text>
-    <text x="349" y="302" text-anchor="middle" font-size="11" fill="#64748b">提交候选动作</text>
+    <text x="349" y="292" text-anchor="middle" font-size="12" fill="#64748b">策略 / LLM 提交候选动作</text>
   </g>
 
   <!-- Node 3: Validate -->
@@ -51,8 +49,7 @@
     <path d="M 538 183 L 542 187 L 549 179" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
     <text x="543" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">校验</text>
     <text x="543" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#0d9488" font-family="Consolas, 'Courier New', monospace">world rules</text>
-    <text x="543" y="286" text-anchor="middle" font-size="11" fill="#64748b">校验合法性</text>
-    <text x="543" y="302" text-anchor="middle" font-size="11" fill="#64748b">与前置条件</text>
+    <text x="543" y="292" text-anchor="middle" font-size="12" fill="#64748b">世界校验合法性与前置条件</text>
   </g>
 
   <!-- Node 4: Settle -->
@@ -66,8 +63,7 @@
     <path d="M 729 182 L 724 178 M 745 182 L 750 178" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
     <text x="737" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">结算</text>
     <text x="737" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#0d9488" font-family="Consolas, 'Courier New', monospace">receipt</text>
-    <text x="737" y="286" text-anchor="middle" font-size="11" fill="#64748b">能量 · 资源</text>
-    <text x="737" y="302" text-anchor="middle" font-size="11" fill="#64748b">· 关系</text>
+    <text x="737" y="292" text-anchor="middle" font-size="12" fill="#64748b">结算能量 · 资源 · 关系</text>
   </g>
 
   <!-- Node 5: Commit -->
@@ -80,8 +76,7 @@
     <path d="M 919 180 a 12 5 0 0 0 24 0" fill="none" stroke="#2563eb" stroke-width="2"/>
     <text x="931" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">写入</text>
     <text x="931" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#2563eb" font-family="Consolas, 'Courier New', monospace">S_t+1</text>
-    <text x="931" y="286" text-anchor="middle" font-size="11" fill="#64748b">写入下一</text>
-    <text x="931" y="302" text-anchor="middle" font-size="11" fill="#64748b">正式状态</text>
+    <text x="931" y="292" text-anchor="middle" font-size="12" fill="#64748b">写入下一正式状态</text>
   </g>
 
   <!-- Node 6: Verify -->
@@ -93,8 +88,7 @@
     <path d="M 1134 180 l -6 6 a 5 5 0 0 1 -7 0 l -4 -4" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
     <text x="1125" y="242" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">校验</text>
     <text x="1125" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#059669" font-family="Consolas, 'Courier New', monospace">hash chain</text>
-    <text x="1125" y="286" text-anchor="middle" font-size="11" fill="#64748b">哈希 · 不变量</text>
-    <text x="1125" y="302" text-anchor="middle" font-size="11" fill="#64748b">· 留痕记录</text>
+    <text x="1125" y="292" text-anchor="middle" font-size="12" fill="#64748b">校验哈希 · 不变量 · 记录</text>
   </g>
 
   <!-- ===================== arrows ===================== -->
