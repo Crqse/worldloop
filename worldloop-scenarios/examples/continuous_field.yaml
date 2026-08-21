@@ -1,0 +1,78 @@
+# Example: continuous field world (S-06 template)
+# A continuous-box scenario with a resource density field.
+scenario:
+  scenario_id: continuous_field_v0
+  scenario_version: "0.1.0"
+  description: "Continuous-field world with resource density channel (M3 Gate template 2)."
+  author: WorldLoop
+  tags: [continuous, field, m3-template]
+
+time:
+  dt: 0.5
+  max_ticks: 200
+  deterministic: true
+
+space:
+  type: continuous
+  bounds: [[0.0, 10.0], [0.0, 10.0]]
+  periodic: false
+
+fields:
+  enabled: true
+  channels:
+    - {name: resource_density, dtype: float, shape: [10, 10], unit: density}
+    - {name: hazard_level, dtype: float, shape: [10, 10], unit: severity}
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: x, dtype: float}
+    - {name: y, dtype: float}
+    - {name: alive, dtype: bool}
+  initial_count: 10
+  spawn_template:
+    energy_range: [10.0, 30.0]
+    position_dist: uniform
+
+relations:
+  enabled: false
+
+registries:
+  enabled: false
+
+actions:
+  is_closed: true
+  actions:
+    - action_type: move
+      params_schema:
+        dx: float
+        dy: float
+      effects:
+        - {target: entity, field: x, op: add, value: "$dx"}
+        - {target: entity, field: y, op: add, value: "$dy"}
+      cost: 0.5
+      preconditions: []
+    - action_type: forage
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 3.0}
+        - {target: field, field: resource_density, op: sub, value: 0.1}
+      cost: 0.0
+      preconditions: []
+
+exogenous:
+  events:
+    - {kind: resource_spawn, rate: 0.05}
+  seed: 42
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []

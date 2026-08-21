@@ -1,0 +1,70 @@
+# Example: discrete grid world (S-05 template)
+# A minimal discrete-grid scenario with forage / rest actions.
+scenario:
+  scenario_id: discrete_grid_v0
+  scenario_version: "0.1.0"
+  description: "Minimal discrete-grid world for M3 Gate (a) template 1."
+  author: WorldLoop
+  tags: [discrete, minimal, m3-template]
+
+time:
+  dt: 1.0
+  max_ticks: 100
+  deterministic: true
+
+space:
+  type: discrete
+  shape: [10, 10]
+  periodic: false
+
+fields:
+  enabled: false
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: x, dtype: int}
+    - {name: y, dtype: int}
+    - {name: alive, dtype: bool}
+  initial_count: 5
+  spawn_template:
+    energy_range: [0.0, 20.0]
+    position_dist: uniform
+
+relations:
+  enabled: false
+
+registries:
+  enabled: false
+
+actions:
+  is_closed: true
+  actions:
+    - action_type: forage
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 5.0}
+      cost: 0.0
+      preconditions: []
+    - action_type: rest
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 1.0}
+      cost: 0.0
+      preconditions: []
+
+exogenous:
+  events: []
+  seed: null
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []

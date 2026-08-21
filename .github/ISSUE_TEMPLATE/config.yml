@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & discussions
+    url: https://github.com/Crqse/worldloop/discussions
+    about: Usage questions and design discussions go here.
+  - name: Paid support & custom development
+    url: mailto:1148395497@qq.com
+    about: "Email <1148395497@qq.com> with 'WorldLoop support' in the subject."

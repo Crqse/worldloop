@@ -1,0 +1,202 @@
+# Example: emergency resource scheduling v1 (M6 saturation fix).
+# v1 fixes 2 of 3 saturation problems observed in v0:
+#   1. position_change saturation: v0 MOVE had no energy_above precondition,
+#      so MOVE always succeeded when target_node was adjacent. v1 adds
+#      energy_above=1.0 to MOVE, so low-energy agents fail MOVE → position
+#      unchanged. This breaks the deterministic mapping (action_type →
+#      position_change) and makes full / no_action / shuffled accuracy
+#      distinguishable: full model learns (action_type, energy) → success;
+#      no_action predicts "no change"; shuffled uses wrong action features.
+#   2. edge_change_count saturation: v0 SHARE (cost 0.2, energy_above 0.5)
+#      and COMMUNICATE (cost 0.1, no precondition) almost always succeeded.
+#      v1 raises SHARE cost to 2.0 + energy_above=5.0, COMMUNICATE cost to
+#      1.5 + energy_above=3.0. With lower initial energy_range [5.0, 12.0],
+#      agents deplete energy after a few actions, making edge adds
+#      conditional rather than guaranteed.
+#   3. executed_candidate_rank N/A: NOT fixed — spec layer cannot fix.
+#      rollout.py always augments candidate_actions to a single candidate
+#      (`{executed.agent_id: proposal}`), so NDCG@3 stays N/A. This is a
+#      kernel/rollout concern, not a spec concern. ACCEPTANCE 1 (≥2/3) is
+#      still satisfied.
+#
+# v1 preserves v0's 3 strong targets:
+#   - energy_delta: still differentiable (different cost per action_type)
+#   - multi_step_energy_delta: still differentiable (cost sequences)
+#   - edge_change_count: now conditional (was saturated, now fixable)
+#
+# Scenario topology unchanged from v0:
+#   - 4 agents / 5 nodes (base, zone_a-d)
+#   - 7 actions (MOVE/COLLECT/DELIVER/SHARE/REPAIR/COMMUNICATE/REST)
+#   - 2 edge types (route, communication)
+#   - 3 registry types (resource, facility, message)
+scenario:
+  scenario_id: emergency_resource_v1
+  scenario_version: "0.1.0"
+  description: "Multi-agent emergency resource scheduling v1 — fixes position_change and edge_change_count saturation."
+  author: WorldLoop
+  tags: [emergency, resource, scheduling, m6-saturation-fix]
+
+time:
+  dt: 1.0
+  max_ticks: 100
+  deterministic: true
+
+space:
+  type: graph
+  node_ids: [base, zone_a, zone_b, zone_c, zone_d]
+  edges:
+    - [base, zone_a]
+    - [base, zone_b]
+    - [base, zone_c]
+    - [zone_a, zone_b]
+    - [zone_b, zone_c]
+    - [zone_c, zone_d]
+    - [zone_d, zone_a]
+  periodic: false
+
+fields:
+  enabled: true
+  channels:
+    - {name: hazard_level, dtype: float, unit: severity}
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+    - {name: node, dtype: str}
+    - {name: load, dtype: float}
+    - {name: capacity, dtype: float}
+    - {name: alive, dtype: bool}
+  initial_count: 4
+  spawn_template:
+    # v1: lowered from [20.0, 40.0] to [5.0, 12.0] so that agents
+    # deplete energy within ~5-10 actions, triggering SHARE /
+    # COMMUNICATE / MOVE failures (the v1 saturation fix).
+    energy_range: [5.0, 12.0]
+    node_dist: uniform
+
+relations:
+  enabled: true
+  edge_types: [route, communication]
+  directed: false
+
+registries:
+  enabled: true
+  registry_types: [resource, facility, message]
+  initial_entries:
+    - {entry_id: res_water_base, registry_type: resource, state: available, metadata: {node: base, amount: 10.0}}
+    - {entry_id: res_food_zone_a, registry_type: resource, state: available, metadata: {node: zone_a, amount: 8.0}}
+    - {entry_id: res_med_zone_c, registry_type: resource, state: available, metadata: {node: zone_c, amount: 5.0}}
+    - {entry_id: fac_clinic_zone_b, registry_type: facility, state: damaged, metadata: {node: zone_b}}
+    - {entry_id: fac_power_zone_d, registry_type: facility, state: damaged, metadata: {node: zone_d}}
+
+actions:
+  is_closed: true
+  actions:
+    # MOVE v1: add energy_above=1.0 precondition.
+    # v0 MOVE had no energy precondition → always succeeded when edge_exists.
+    # v1 makes MOVE fail when energy < 1.0, so position_change is no longer
+    # a deterministic function of action_type alone. Three-way accuracy
+    # becomes distinguishable: full model uses (action_type, energy) to
+    # predict; no_action predicts "no change"; shuffled uses wrong action.
+    - action_type: MOVE
+      params_schema:
+        target_node: str
+      effects:
+        - {target: entity, field: node, op: set, value: "$target_node"}
+      cost: 1.0
+      preconditions:
+        - {kind: edge_exists, from: "$entity.node", to: "$target_node"}
+        - {kind: energy_above, value: 1.0}
+
+    # COLLECT: unchanged from v0 (energy_above=1.0 keeps it differentiable
+    # for energy_delta target).
+    - action_type: COLLECT
+      params_schema:
+        entry_id: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: add, value: "$amount"}
+        - {target: registry, field: state, op: set, value: "depleted"}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    # DELIVER: unchanged from v0.
+    - action_type: DELIVER
+      params_schema:
+        entry_id: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: sub, value: "$amount"}
+        - {target: registry, field: state, op: set, value: "stocked"}
+      cost: 0.5
+      preconditions:
+        - {kind: energy_above, value: 1.0}
+
+    # SHARE v1: raise cost (0.2 → 2.0) and energy_above (0.5 → 5.0).
+    # v0 SHARE almost always succeeded (cost 0.2, threshold 0.5). v1 makes
+    # SHARE fail when energy < 5.0, so edge_change_count is no longer
+    # always 1. Combined with lower initial energy_range, agents deplete
+    # energy after a few actions, producing both success (edge added) and
+    # failure (no edge) samples → three-way MAE becomes distinguishable.
+    - action_type: SHARE
+      params_schema:
+        target_agent: str
+        amount: float
+      effects:
+        - {target: entity, field: load, op: sub, value: "$amount"}
+        - {target: relation, field: communication, op: add, value: "$target_agent"}
+      cost: 2.0
+      preconditions:
+        - {kind: energy_above, value: 5.0}
+
+    # REPAIR: unchanged from v0 (energy_above=2.0 keeps it differentiable).
+    - action_type: REPAIR
+      params_schema:
+        entry_id: str
+      effects:
+        - {target: registry, field: state, op: set, value: "operational"}
+        - {target: field, field: hazard_level, op: sub, value: 0.5}
+      cost: 1.5
+      preconditions:
+        - {kind: energy_above, value: 2.0}
+
+    # COMMUNICATE v1: add cost (0.1 → 1.5) and energy_above=3.0 precondition.
+    # v0 COMMUNICATE had no precondition and cost 0.1 → always succeeded.
+    # v1 makes COMMUNICATE fail when energy < 3.0, contributing to
+    # edge_change_count saturation fix together with SHARE.
+    - action_type: COMMUNICATE
+      params_schema:
+        target_agent: str
+      effects:
+        - {target: relation, field: communication, op: add, value: "$target_agent"}
+      cost: 1.5
+      preconditions:
+        - {kind: energy_above, value: 3.0}
+
+    # REST (optional): unchanged from v0. Restores energy so agents can
+    # recover from low-energy states, producing both success and failure
+    # samples for SHARE/COMMUNICATE/MOVE within a single episode.
+    - action_type: REST
+      params_schema: {}
+      effects:
+        - {target: entity, field: energy, op: add, value: 2.0}
+      cost: 0.0
+      preconditions: []
+
+exogenous:
+  events:
+    - {kind: hazard_escalation, rate: 0.1}
+  seed: 42
+
+termination:
+  stop_conditions:
+    - kind: max_ticks
+    - kind: no_alive
+  truncate_at_max: true
+
+data:
+  policy_hooks: []
+  coverage_hooks: []
+  counterfactual_hooks: []
+  export_hooks: []

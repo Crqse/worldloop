@@ -1,0 +1,27 @@
+# Example: INVALID spec — missing termination.stop_conditions (must fail schema)
+scenario:
+  scenario_id: invalid_missing_termination
+  scenario_version: "0.1.0"
+  description: "Invalid spec: termination.stop_conditions empty."
+
+time:
+  max_ticks: 100
+
+space:
+  type: discrete
+  shape: [5, 5]
+
+entities:
+  columns:
+    - {name: energy, dtype: float}
+  initial_count: 1
+
+actions:
+  actions:
+    - action_type: noop
+      effects:
+        - {target: entity, field: energy, op: add, value: 0.0}
+
+termination:
+  stop_conditions: []
+  truncate_at_max: true

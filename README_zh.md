@@ -143,7 +143,7 @@ KernelBranchScheduler 反事实分支、泄漏检查（绝对路径/API key/缓�
 baselines、treatment comparison）。
 
 ---
-## 证据与边界（对外主张的唯一来源为 `research/evidence/CLAIMS.md`）
+## 证据与边界（对外主张的唯一来源为 `docs/CLAIMS.md`）
 
 - 确定性重放与反事实分支：支持精确恢复的环境在 MPE2 Simple Spread/Simple Tag
   上全通过；任意环境的 exact restore 需声明 capability。
@@ -171,7 +171,8 @@ Contributions welcome —— 从「写一个 YAML 场景」开始是最快上手
 
 - 冯福，昵称 **cqq** — GitHub [@Crqse](https://github.com/Crqse) ·
   <1148395497@qq.com>
-- **商业授权 / 定制开发** —— 联系 <1148395497@qq.com>。MIT 对个人、学术与开源用途保持免费。
+- **付费集成 / 技术支持 / 定制开发** —— 联系 <1148395497@qq.com>。
+  MIT 本身即允许商用；该渠道专门承接 **付费集成、技术支持订阅与定制开发**。
 
 ## License
 

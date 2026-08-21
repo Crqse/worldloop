@@ -1084,10 +1084,19 @@ class TestModuleImportPath:
         assert hasattr(sm, "__file__"), "sm has no __file__"
         assert sm.__file__ is not None, "sm.__file__ is None"
         path = Path(sm.__file__).resolve()
-        # Must be inside current/worldloop-data/src/worldloop_data/.
-        assert "current" in path.parts, f"unexpected path: {path}"
+        # Must be inside <root>/worldloop-data/src/worldloop_data/ — true
+        # both under the mother-repo (current/worldloop-data/src) and
+        # under the release tree (worldloop-data/src). Anchored by the
+        # two directory-level invariants; never by "current" (which does
+        # not exist in the public tree).
         assert "worldloop-data" in path.parts, f"unexpected path: {path}"
         assert "src" in path.parts, f"unexpected path: {path}"
+        # Also ensure it's not a site-packages wheel install (the whole
+        # point of the audit check F-07).
+        assert "site-packages" not in path.parts, (
+            f"state_materializer loaded from installed wheel, not the "
+            f"workspace src/ tree: {path}"
+        )
 
     def test_module_exports_all_public_symbols(self):
         from worldloop_data.evaluation import state_materializer as sm

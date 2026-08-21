@@ -20,6 +20,24 @@ from __future__ import annotations
 from pathlib import Path
 
 
+def _assert_src_layout(path: Path, package_dir: str, package_root: str) -> None:
+    """Assert ``path`` lies under ``<package_root>/src/<package_dir>/``.
+
+    Works for both the mother repo layout (``current/<package_root>/src/…``)
+    and the independent public release tree (``<package_root>/src/…``).
+    Still hard-fails on site-packages imports — the real guard F-07 was
+    written to catch.
+    """
+    assert path.parent.name == package_dir, f"unexpected package dir: {path}"
+    assert path.parent.parent.name == "src", f"unexpected import path (not under src/): {path}"
+    assert path.parent.parent.parent.name == package_root, f"unexpected package-root dir: {path}"
+    assert package_root in path.parts, f"unexpected import path: {path}"
+    assert "src" in path.parts, f"unexpected import path (not in src/): {path}"
+    assert "site-packages" not in path.parts, (
+        f"F-07 violation: module imported from site-packages instead of src/ tree: {path}"
+    )
+
+
 def test_package_root_import_path_in_workspace_src(capsys) -> None:
     """F-07: ``worldloop_data`` package root must be imported from workspace src/."""
     import worldloop_data
@@ -34,12 +52,7 @@ def test_package_root_import_path_in_workspace_src(capsys) -> None:
     assert "worldloop_data.__file__" in captured.out
 
     path = Path(worldloop_data.__file__).resolve()
-    assert "current" in path.parts, f"unexpected import path (not in workspace): {path}"
-    assert "worldloop-data" in path.parts, f"unexpected import path: {path}"
-    assert "src" in path.parts, f"unexpected import path (not in src/): {path}"
-    assert "site-packages" not in path.parts, (
-        f"F-07 violation: worldloop_data imported from site-packages: {path}"
-    )
+    _assert_src_layout(path, package_dir="worldloop_data", package_root="worldloop-data")
 
 
 def test_evaluation_subpackage_import_path_in_workspace_src(capsys) -> None:
@@ -54,10 +67,15 @@ def test_evaluation_subpackage_import_path_in_workspace_src(capsys) -> None:
     captured = capsys.readouterr()
     assert "worldloop_data.evaluation.__file__" in captured.out
 
+    # evaluation lives one level deeper under worldloop_data; still enforce
+    # <package-root>/src/<package_dir>/evaluation/__init__.py
     path = Path(evaluation.__file__).resolve()
-    assert "current" in path.parts, f"unexpected import path: {path}"
+    assert path.parent.name == "evaluation", f"unexpected subpackage dir: {path}"
+    assert path.parent.parent.name == "worldloop_data", f"unexpected package dir: {path}"
+    assert path.parent.parent.parent.name == "src", f"unexpected import path (not under src/): {path}"
+    assert path.parent.parent.parent.parent.name == "worldloop-data", f"unexpected package-root dir: {path}"
     assert "worldloop-data" in path.parts, f"unexpected import path: {path}"
-    assert "src" in path.parts, f"unexpected import path: {path}"
+    assert "src" in path.parts, f"unexpected import path (not in src/): {path}"
     assert "site-packages" not in path.parts, (
         f"F-07 violation: worldloop_data.evaluation imported from site-packages: {path}"
     )
@@ -75,10 +93,15 @@ def test_data_loader_import_path_in_workspace_src(capsys) -> None:
     captured = capsys.readouterr()
     assert "data_loader.__file__" in captured.out
 
+    # Module-level file: <root>/src/worldloop_data/evaluation/data_loader.py
+    # -> parent = evaluation, grandparent = worldloop_data, g-gparent = src
     path = Path(data_loader.__file__).resolve()
-    assert "current" in path.parts, f"unexpected import path: {path}"
+    assert path.parent.name == "evaluation", f"unexpected subpackage dir: {path}"
+    assert path.parent.parent.name == "worldloop_data", f"unexpected package dir: {path}"
+    assert path.parent.parent.parent.name == "src", f"unexpected import path (not under src/): {path}"
+    assert path.parent.parent.parent.parent.name == "worldloop-data", f"unexpected package-root dir: {path}"
     assert "worldloop-data" in path.parts, f"unexpected import path: {path}"
-    assert "src" in path.parts, f"unexpected import path: {path}"
+    assert "src" in path.parts, f"unexpected import path (not in src/): {path}"
     assert "site-packages" not in path.parts, (
         f"F-07 violation: data_loader imported from site-packages: {path}"
     )
@@ -97,9 +120,12 @@ def test_baselines_import_path_in_workspace_src(capsys) -> None:
     assert "baselines.__file__" in captured.out
 
     path = Path(baselines.__file__).resolve()
-    assert "current" in path.parts, f"unexpected import path: {path}"
+    assert path.parent.name == "evaluation", f"unexpected subpackage dir: {path}"
+    assert path.parent.parent.name == "worldloop_data", f"unexpected package dir: {path}"
+    assert path.parent.parent.parent.name == "src", f"unexpected import path (not under src/): {path}"
+    assert path.parent.parent.parent.parent.name == "worldloop-data", f"unexpected package-root dir: {path}"
     assert "worldloop-data" in path.parts, f"unexpected import path: {path}"
-    assert "src" in path.parts, f"unexpected import path: {path}"
+    assert "src" in path.parts, f"unexpected import path (not in src/): {path}"
     assert "site-packages" not in path.parts, (
         f"F-07 violation: baselines imported from site-packages: {path}"
     )

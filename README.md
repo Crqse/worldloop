@@ -163,7 +163,7 @@ leakage checks (absolute paths / API keys / cache / PII), dataset export
 ranking, baselines, treatment comparison).
 
 ---
-## Evidence & boundaries (claims source: `research/evidence/CLAIMS.md`)
+## Evidence & boundaries (claims source: `docs/CLAIMS.md`)
 
 - **Deterministic replay & counterfactual branch**: on exact-restore
   environments (MPE2 Simple Spread / Simple Tag), all branches pass; any
@@ -199,7 +199,9 @@ Contributions welcome — writing a YAML scenario is the fastest on-ramp, see
 - 冯福 (Fu Feng), aka **cqq** — GitHub [@Crqse](https://github.com/Crqse) ·
   <1148395497@qq.com>
 - **Commercial licensing / custom development** — contact <1148395497@qq.com>.
-  MIT stays free for personal, academic & open-source use.
+  MIT already allows commercial use; this channel covers **paid
+  integration support, technical support subscriptions, and custom
+  development work**.
 
 ## License
 

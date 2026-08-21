@@ -29,7 +29,10 @@ def test_module_import_path_in_workspace_src(capsys) -> None:
     assert "worldloop_scenarios.__file__" in captured.out
 
     path = Path(worldloop_scenarios.__file__).resolve()
-    assert "current" in path.parts, f"unexpected import path (not in workspace): {path}"
+    # Layout contract: …/worldloop-scenarios/src/worldloop_scenarios/__init__.py
+    assert path.parent.name == "worldloop_scenarios", f"unexpected package dir: {path}"
+    assert path.parent.parent.name == "src", f"unexpected import path (not under src/): {path}"
+    assert path.parent.parent.parent.name == "worldloop-scenarios", f"unexpected package-root dir: {path}"
     assert "worldloop-scenarios" in path.parts, f"unexpected import path: {path}"
     assert "src" in path.parts, f"unexpected import path (not in src/): {path}"
     assert "site-packages" not in path.parts, (

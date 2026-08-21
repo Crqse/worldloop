@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a reproducible problem with WorldLoop.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! Good bug reports usually
+        include a scenario YAML + seed so we can reproduce the issue.
+  - type: input
+    id: version
+    attributes:
+      label: WorldLoop version
+      description: Release tag or `main` commit SHA.
+      placeholder: e.g. v0.1.3-beta.1
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows, Linux, macOS, Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: python
+    attributes:
+      label: Python version
+      options: ["3.10", "3.11", "3.12"]
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: What exactly did you do? Paste scenario YAML, seed, and
+        commands. Smaller YAMLs == faster triage.
+      placeholder: |
+        1. pip install …
+        2. save this to s.yaml: …
+        3. pytest …/tests/test_foo.py -q
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Paste error traceback, screenshots, or log excerpts.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - kernel (state / transition / recorder / replay)
+        - scenarios (schema / validator / compiler)
+        - adapters (PettingZoo / Gymnasium)
+        - data (exporter / coverage / quality)
+        - documentation / README
+        - CI / build / packaging
+    validations:
+      required: true

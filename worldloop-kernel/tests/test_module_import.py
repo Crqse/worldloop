@@ -21,11 +21,13 @@ from pathlib import Path
 
 
 def test_module_import_path_in_workspace_src(capsys) -> None:
-    """F-07: ``worldloop_kernel`` must be imported from workspace src/.
+    """F-07: ``worldloop_kernel`` must be imported from a local ``src/`` tree.
 
     Prints ``module.__file__`` so clean-room reproduction logs show the
-    actual import path, then asserts the path is inside the workspace
-    ``current/worldloop-kernel/src/`` tree.
+    actual import path, then asserts the package layout matches
+    ``<package-root>/src/worldloop_kernel/`` — regardless of whether the
+    enclosing workspace is the research mother-repo (``current/…``) or the
+    independent public release tree.
     """
     import worldloop_kernel
 
@@ -41,7 +43,13 @@ def test_module_import_path_in_workspace_src(capsys) -> None:
     assert "worldloop_kernel.__file__" in captured.out
 
     path = Path(worldloop_kernel.__file__).resolve()
-    assert "current" in path.parts, f"unexpected import path (not in workspace): {path}"
+    # Layout contract: …/<package-root>/src/worldloop_kernel/__init__.py
+    # This keeps the same structural guarantee under both the mother repo
+    # (current/worldloop-kernel/src/…) and the public release tree
+    # (worldloop-release/worldloop-kernel/src/…).
+    assert path.parent.name == "worldloop_kernel", f"unexpected package dir: {path}"
+    assert path.parent.parent.name == "src", f"unexpected import path (not under src/): {path}"
+    assert path.parent.parent.parent.name == "worldloop-kernel", f"unexpected package-root dir: {path}"
     assert "worldloop-kernel" in path.parts, f"unexpected import path: {path}"
     assert "src" in path.parts, f"unexpected import path (not in src/): {path}"
     # Hard guard: must NOT be inside site-packages.
