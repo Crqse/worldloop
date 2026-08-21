@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WorldLoop — agents propose, the world adjudicates</title>
+  <style>
+    :root { --ink:#1c1e21; --muted:#6b7177; --accent:#2b6cb0; --bg:#fafbfc; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); }
+    header { padding:56px 20px 24px; text-align:center; }
+    header h1 { margin:0 0 8px; font-size:2.1rem; font-weight:800; letter-spacing:-.01em; }
+    header p { margin:0 auto; max-width:720px; color:var(--muted); }
+    .badges { margin-top:16px; }
+    .badges img { height:20px; margin:0 2px; vertical-align:middle; }
+    main { max-width:860px; margin:0 auto; padding:16px 20px 64px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; margin-top:28px; }
+    .card { background:#fff; border:1px solid #e6e8eb; border-radius:12px; padding:20px; text-decoration:none; color:inherit; transition:box-shadow .15s ease, transform .15s ease; display:block; }
+    .card:hover { box-shadow:0 6px 20px rgba(27,31,35,.08); transform:translateY(-2px); }
+    .card h2 { margin:0 0 6px; font-size:1.05rem; }
+    .card p { margin:0; color:var(--muted); font-size:.92rem; }
+    footer { text-align:center; color:var(--muted); font-size:.85rem; padding:32px 20px; }
+    a { color:var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WorldLoop</h1>
+    <p>An environment-authoritative multi-agent simulation &amp; trajectory-data
+       system. Agents (or LLMs) only <strong>propose</strong>; a deterministic
+       world <strong>adjudicates</strong> every consequence — replayable,
+       branchable, counterfactually comparable.</p>
+    <div class="badges">
+      <img alt="Python 3.10-3.12" src="https://img.shields.io/badge/Python-3.10--3.12-3776AB">
+      <img alt="MIT" src="https://img.shields.io/badge/license-MIT-23aaff">
+      <img alt="deterministic replay" src="https://img.shields.io/badge/replay-deterministic-brightgreen">
+    </div>
+  </header>
+  <main>
+    <div class="grid">
+      <a class="card" href="examples/assets/emergency_scheduling.html">
+        <h2>Interactive demo</h2>
+        <p>Emergency-resource scheduling simulation — open in your browser.</p>
+      </a>
+      <a class="card" href="examples/quickstart.ipynb">
+        <h2>Quickstart notebook</h2>
+        <p>Replay + counterfactual branch, side-by-side, from the repo root.</p>
+      </a>
+      <a class="card" href="README.md">
+        <h2>README</h2>
+        <p>Install, the four packages, evidence &amp; boundaries.</p>
+      </a>
+      <a class="card" href="examples/discrete_grid.yaml">
+        <h2>Example scenario</h2>
+        <p>discrete_grid.yaml — a readable, compile-time-validated rule set.</p>
+      </a>
+    </div>
+  </main>
+  <footer>
+    MIT License · built on the principle that the environment is authoritative.
+  </footer>
+</body>
+</html>
