@@ -23,9 +23,9 @@ The package is structured as:
 - :mod:`worldloop_kernel.observation` — :class:`AgentObservationView` + :class:`ObservationProjector`
   (Phase 1 / Beta correction: per-agent observation contract)
 
-See ``README.md`` for scope, non-goals, and milestones. See
-``docs/01_strategy/2026-07-26_v2_kernel_ADR.md`` for the seven core
-architecture decisions.
+See ``README.md`` for scope, non-goals, and milestones. Architecture
+decisions are documented in the repository ``docs/CLAIMS.md`` (public
+repo) and each package's ``README.md``.
 
 The minimal ten public types (per main plan §4.5) are re-exported from
 this top-level package so that consumers can write::

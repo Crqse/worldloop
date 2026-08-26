@@ -55,8 +55,7 @@ Pages deploy (lightweight, no build step needed):
 - [ ] Then on GitHub: **Releases → Draft a new release**
   - Tag: `v0.1.3-beta.1`
   - Title: `WorldLoop v0.1.3-beta.1 — environment-authoritative public beta`
-  - Release Notes (use the bullets in [RELEASE_NOTES_BETA1.md] OR the
-    condensed copy below):
+  - Release Notes (paste the condensed bullets below):
     > Agents propose, world adjudicates — first public beta of the
     > deterministic four-package layout. Highlights:
     > - 4 editable packages (kernel / scenarios / adapters / data), all

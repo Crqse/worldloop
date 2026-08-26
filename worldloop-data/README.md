@@ -37,7 +37,7 @@ scenario → policy pool → coverage-driven run → counterfactual branch
 
 ## Design rules (per main plan §14 and ADR §3)
 
-- **No `current/worldloop/core/*` imports.** This package depends only on
+- **No the v1 native core imports.** This package depends only on
   `worldloop_kernel`, `worldloop_scenarios`, and `worldloop_adapters`.
 - **Reuse kernel primitives.** Recording, validation, replay, and
   counterfactual branching reuse the kernel implementations; this package

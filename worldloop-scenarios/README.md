@@ -81,4 +81,4 @@ print(spec.world_parameters_hash())
 - **Out of scope**: LLM auto-fix, codegen; data production lives in
   `worldloop-data`, not here
 - **Dependencies**: `worldloop-kernel`, `pyyaml`, `jsonschema`
-- **No v1 imports**: this package does NOT import `current/worldloop/core/*`
+- **No v1 imports**: this package does NOT import the v1 native core

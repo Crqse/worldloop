@@ -133,7 +133,7 @@ boundary constraint is *faithfully executed* rather than silently clamped
 
 Dependency direction is fixed: `kernel ← scenarios`, `kernel ← adapters`,
 `kernel + scenarios ← data`. The four packages do not depend on the five-layer
-native world (`current/worldloop/` is a separate v1 implementation).
+native world (`current/worldloop/` is an earlier v1 implementation).
 
 ### Feature highlights (as of v0.1.3)
 

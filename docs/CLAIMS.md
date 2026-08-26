@@ -1,11 +1,9 @@
 # CLAIMS (public evidence)
 
-This file is the **release-checkpoint copy** of `research/evidence/CLAIMS.md`
-from the development repository. Every claim below is written so a reader
-can *verify it from this public repository alone* (no mother-repo-only
-material). Anything requiring internal M-series protocols, pre-registered
-experiment scripts, or hand-labelled datasets is intentionally **not**
-reproduced here.
+Every claim below is written so a reader can *verify it from this public
+repository alone* (no development-repo-only material, e.g. M-series
+protocols, pre-registered experiment scripts, or hand-labelled datasets —
+those are intentionally **not** reproduced here).
 
 ## 1. Protocol claim
 

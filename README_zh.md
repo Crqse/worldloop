@@ -119,7 +119,7 @@ print(after.meta.tick)                                # 1
 | `worldloop-data` | 0.1.3 | 策略池/rollout/反事实/覆盖率/泄漏检查/导出/LLM 策略/评估 | 可选 |
 
 依赖方向固定：`kernel ← scenarios`、`kernel ← adapters`、`kernel+scenarios ← data`。
-四个包不依赖五层原生世界（`current/worldloop/` 是 v1 的独立实现）。
+四个包不依赖五层原生世界（`current/worldloop/` 为早期的 v1 实现）。
 
 ### 功能清单（v0.1.3 实证）
 

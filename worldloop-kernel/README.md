@@ -13,7 +13,7 @@ WorldLoop v2 独立转移微内核。把一次世界变化变成可执行、可�
 
 ## 它解决什么问题
 
-WorldLoop v1 的五层 Native 主线（`current/worldloop/`）已经具备 WST、ECS、WorldGraph、注册表、种群、动作执行、能量、死亡、繁殖、WorldTransition V1 协议、checkpoint 和确定性重放能力。但所有这些能力都嵌在五层内部，外部环境（PettingZoo / Gymnasium / OpenEnv / MCP / learned world）无法复用同一套协议。
+WorldLoop v1 的五层 Native 主线（an earlier five-layer native line）已经具备 WST、ECS、WorldGraph、注册表、种群、动作执行、能量、死亡、繁殖、WorldTransition V1 协议、checkpoint 和确定性重放能力。但所有这些能力都嵌在五层内部，外部环境（PettingZoo / Gymnasium / OpenEnv / MCP / learned world）无法复用同一套协议。
 
 `worldloop-kernel` 把"包围并记录一次完整转移"的最小协议抽出来，让任何世界（Native 五层、外部环境、learned simulator）都通过同一接口被运行、记录、验证和重放。
 
@@ -58,7 +58,7 @@ M0/M1 Gates 全部闭合（252 kernel tests + 47 conformance + 16 dual-run + 26 
 - `worldloop-scenarios` 可以依赖 kernel，不依赖完整五层
 - 学位论文包不 import 以上任何包
 
-完整架构决策见 `docs/01_strategy/2026-07-26_v2_kernel_ADR.md`。
+完整架构决策见各包 `README.md` 与 `docs/CLAIMS.md`（公开仓库根目录）。
 
 ## 使用
 
