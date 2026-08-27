@@ -1,7 +1,5 @@
 # worldloop-kernel
 
-> **Status**: v0.1.3 beta candidate (beta.4; M0/M1 Gates closed; Phase 1 observation contract + Phase 5 joint action added on top of the alpha.2-frozen protocol surface).
-> **Stability**: Beta candidate, reproducible. R1+R2 clean-checkout tested. R3 pending external environment (BLOCKED, Windows-only host).
 
 WorldLoop v2 独立转移微内核。把一次世界变化变成可执行、可验证、可重放、可分支的标准过程。
 
@@ -27,7 +25,7 @@ WorldLoop v1 的五层 Native 主线（an earlier five-layer native line）已�
 
 ## 当前能力
 
-M0/M1 Gates 全部闭合（252 kernel tests + 47 conformance + 16 dual-run + 26 M1 gate = 341 passed）：
+M0/M1 Gates 全部闭合：
 
 - 世界协议（`WorldProtocol`）：`step()`, `validate_action()`, `legal_actions()`, `checkpoint()`, `restore()`, `capabilities()`, `reset()`
 - 状态转移（`StateView`, `StateDelta`, `canonical_encode`, `hash_state`, `diff_state`, `apply_delta`）
@@ -56,7 +54,6 @@ M0/M1 Gates 全部闭合（252 kernel tests + 47 conformance + 16 dual-run + 26 
 - 现有五层通过 `WorldLoopNativeAdapter` 实现 kernel 协议（M1 阶段）
 - `worldloop-adapters` 可以依赖 kernel 和对应外部框架
 - `worldloop-scenarios` 可以依赖 kernel，不依赖完整五层
-- 学位论文包不 import 以上任何包
 
 完整架构决策见各包 `README.md` 与 `docs/CLAIMS.md`（公开仓库根目录）。
 
@@ -73,8 +70,12 @@ world = ToyWorld(seed=42, grid_size=10)
 world.reset(seed=42)
 
 # 提议-校验-执行闭环
-candidates = world.legal_actions()
-proposal = candidates[0]  # 在实际使用中可由 LLM/Policy 生成
+space = world.legal_actions()
+from worldloop_kernel import ActionProposal
+proposal = ActionProposal(
+    agent_id=space.agent_id, action_type=space.legal_actions[0].action_type,
+    params=space.legal_actions[0].params,
+    proposed_at_tick=0, proposer="readme-example")
 assert world.validate_action(proposal)
 
 transition = world.step(proposal)

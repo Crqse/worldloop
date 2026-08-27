@@ -33,7 +33,6 @@ This package provides adapters that let the independent `worldloop-kernel` drive
 **Out of scope:**
 - learned/neural world adapters (E5, deferred to v2 follow-up)
 - MCP / database tool environments (E4, deferred to M2.5)
-- Public PyPI release (requires separate user confirmation)
 - LLM calls (adapters never call LLMs; policies live outside the kernel)
 - Generic PettingZoo joint-policy support beyond the verified allowlist
   (joint mode is validated on 2 MPE env families only; no claim of
@@ -78,6 +77,11 @@ adapter.reset(seed=42)
 
 state = adapter.observe()
 space = adapter.legal_actions(agent_id=0)
+# build a proposal from a legal action:
+proposal = ActionProposal(agent_id=0, action_type="move",
+                         params={"discrete_action": 0},
+                         proposed_at_tick=state.meta.tick,
+                         proposer="readme-example")
 executed, receipt = adapter.validate_action(proposal)
 record = adapter.step(executed)          # sequential compatibility mode
 ```
@@ -95,10 +99,8 @@ record = adapter.step_joint(executed_joint)      # all agents same tick
 
 ## M2 Gate (§12.7)
 
-The M2 Gate validates that adapters correctly implement the kernel `WorldProtocol` across at least 3 environment classes. See `tests/` for conformance test coverage and `RECONCILIATION.md` for the full A-08 capability/reconciliation report (M2 Gate 10/10 PASS, 158 tests).
+The M2 Gate validates that adapters correctly implement the kernel `WorldProtocol` across at least 3 environment classes. See `tests/` for conformance test coverage (M2 Gate 10/10 PASS, 158 tests).
 
 ## Version
 
-0.1.2 (M2 Phase E complete — A-01..A-10 done, M2 Gate §12.7 PASS; Phase 5
-joint action mode + exact-restore verified allowlist, joint pilot E-Gates
-PASS on 2 env families — see `runs/2026-07-30/external_joint_action_pilot_v1/`)
+0.1.3 — M2 Phase E complete (A-01..A-10, M2 Gate PASS), Phase 5 joint action + exact-restore verified allowlist.

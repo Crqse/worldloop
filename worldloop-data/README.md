@@ -37,7 +37,7 @@ scenario → policy pool → coverage-driven run → counterfactual branch
 
 ## Design rules (per main plan §14 and ADR §3)
 
-- **No the v1 native core imports.** This package depends only on
+- **No v1 native core imports.** This package depends only on
   `worldloop_kernel`, `worldloop_scenarios`, and `worldloop_adapters`.
 - **Reuse kernel primitives.** Recording, validation, replay, and
   counterfactual branching reuse the kernel implementations; this package
@@ -53,17 +53,15 @@ scenario → policy pool → coverage-driven run → counterfactual branch
 
 ## Installation
 
-```powershell
-cd current\worldloop-data
-python -m pip install -e .
-python -m pip install -e ".[dev]"
+```bash
+# from the repo root:
+python -m pip install -e ./worldloop-data
 ```
 
 ## Smoke test
 
-```powershell
-cd current\worldloop-data
-python -m pytest tests -q
+```bash
+pytest worldloop-data/tests -q
 ```
 
 ## Status

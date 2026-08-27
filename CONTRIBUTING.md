@@ -17,7 +17,7 @@ can align the scope. Good first contributions:
 
 1. **New scenario YAML files.** `worldloop-scenarios/examples/` contains
    the showcase ones. A new YAML that follows the spec in
-   `worldloop_scenarios/schema/` and compiles cleanly against
+   `worldloop_scenarios/schemas/` and compiles cleanly against
    `worldloop-scenarios/tests/test_compiler.py` is a great addition.
 2. **Bug reports that include a reproducible scenario** (a minimal YAML +
    seed + version that fails to build or that produces a suspect state

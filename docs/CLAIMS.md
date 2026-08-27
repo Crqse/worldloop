@@ -11,10 +11,12 @@ those are intentionally **not** reproduced here).
 > replayed, branched, and compared counterfactually.
 
 Evidence:
-- `worldloop-kernel/src/worldloop_kernel/recorder/` — transition record +
+- `worldloop-kernel/src/worldloop_kernel/recorder.py` — transition record +
   hash chain implementation.
-- `worldloop-kernel/tests/test_recorder.py` — round-trip write / load /
-  replay tests.
+- `worldloop-kernel/tests/test_k06_validation_recorder.py` — recorder
+  round-trip, hash-chain closure, invariant quarantine.
+- `worldloop-kernel/tests/test_k07_replay_branch.py` — deterministic replay
+  and counterfactual branch tests.
 - `examples/quickstart.ipynb` — replay & counterfactual branch demo with
   two adjacent seeds side-by-side.
 
@@ -25,8 +27,10 @@ Evidence:
 > are all performed by deterministic rules.
 
 Evidence:
-- `worldloop-kernel/src/worldloop_kernel/runtime/` — the proposal →
-  validate → settle → write pipeline.
+- `worldloop-kernel/src/worldloop_kernel/protocol.py` — `WorldProtocol`
+  (propose → validate → settle → write contract).
+- `worldloop-kernel/src/worldloop_kernel/engine.py` — `ToyWorld`
+  reference engine used in the quickstart.
 - `worldloop-scenarios/examples/discrete_grid.yaml` — example rule set
   (forage / move / rest) as a public readable spec.
 - `worldloop-scenarios/tests/test_parameterized_world.py` — parametrized
@@ -40,16 +44,17 @@ Evidence:
 > compile time, not mid-run.
 
 Evidence:
-- `worldloop-scenarios/src/worldloop_scenarios/schema/` — `ScenarioSpec`
-  v0 schema + JSON-schema definitions.
-- `worldloop-scenarios/tests/test_validator.py` — all three showcase
-  scenarios pass semantic validation.
-- `worldloop-scenarios/tests/test_compiler.py` — `test_compile_yaml_file`
+- `worldloop-scenarios/src/worldloop_scenarios/spec.py` — `ScenarioSpec`
+  v0 dataclass.
+- `worldloop-scenarios/src/worldloop_scenarios/schemas/spec_v0.schema.json`
+  — JSON-schema definitions.
+- `worldloop-scenarios/src/worldloop_scenarios/validator.py` — semantic
+  validation; all three showcase scenarios pass.
+- `worldloop-scenarios/tests/test_compiler.py` — `test_compile_example`
   parametrized over `discrete_grid`, `continuous_field`,
   `graph_registry`, `emergency_resource`.
 - `worldloop-scenarios/examples/invalid_missing_termination.yaml` — a
-  deliberately invalid fixture that the validator must reject
-  (`test_spec_v0.test_invalid_spec_rejected`).
+  deliberately invalid fixture that the validator must reject.
 
 ## 4. Dataset-export claim
 
@@ -58,8 +63,10 @@ Evidence:
 > training-gain claim asserted).
 
 Evidence:
-- `worldloop-data/src/worldloop_data/exporter/` — exporter, leakage
-  checker, quality reporter.
+- `worldloop-data/src/worldloop_data/exporter.py` — dataset exporter.
+- `worldloop-data/src/worldloop_data/leakage.py` — leakage checker
+  (absolute paths / API keys / cache / PII).
+- `worldloop-data/src/worldloop_data/quality.py` — quality reporter.
 - `worldloop-data/tests/test_exporter.py` — discrete_grid.yaml →
   trajectory-dataset round-trip with leakage emitted.
 - `examples/quickstart.ipynb` — exported dataset sample + counterfactual

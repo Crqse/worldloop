@@ -35,8 +35,6 @@ See `examples/` for working specs:
 
 Showcase assets (built from the `emergency_demo` scenario):
 - `demo/emergency_demo.py` — four-role policy + ASCII-animated CLI demo
-- `make_emergency_gif.py` / `make_emergency_web.py` — build the README GIF
-  and the self-contained interactive web demo
 - `assets/single_step_chain.svg`, `assets/emergency_scheduling.gif`,
   `assets/emergency_scheduling.html` — generated visual assets
 - `quickstart.ipynb` — 5-minute notebook (observe / propose / adjudicate /
@@ -44,9 +42,9 @@ Showcase assets (built from the `emergency_demo` scenario):
 
 ## Install
 
-```powershell
-cd current\worldloop-scenarios
-python -m pip install -e .
+```bash
+# from the repo root:
+python -m pip install -e ./worldloop-scenarios
 ```
 
 ## Use
