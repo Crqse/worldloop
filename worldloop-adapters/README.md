@@ -69,6 +69,7 @@ pip install -e ".[pettingzoo,gymnasium,dev]"
 ## Usage
 
 ```python
+from worldloop_kernel import ActionProposal
 from worldloop_adapters.pettingzoo import PettingZooParallelAdapter, make_simple_spread_env
 
 env = make_simple_spread_env(n_agents=2, n_landmarks=2, max_cycles=25)
@@ -76,12 +77,14 @@ adapter = PettingZooParallelAdapter(env=env, env_id="simple_spread_v3")
 adapter.reset(seed=42)
 
 state = adapter.observe()
-space = adapter.legal_actions(agent_id=0)
-# build a proposal from a legal action:
-proposal = ActionProposal(agent_id=0, action_type="move",
-                         params={"discrete_action": 0},
-                         proposed_at_tick=state.meta.tick,
-                         proposer="readme-example")
+space = adapter.legal_actions(agent_id="agent_0")
+
+# A policy (or LLM) submits a candidate action; the adapter validates it.
+proposal = ActionProposal(
+    agent_id="agent_0", action_type="move",
+    params={"discrete_action": 0},          # one of space.legal_actions
+    proposed_at_tick=state.meta.tick, proposer="readme-example",
+)
 executed, receipt = adapter.validate_action(proposal)
 record = adapter.step(executed)          # sequential compatibility mode
 ```

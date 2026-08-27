@@ -66,24 +66,27 @@ from worldloop_kernel import (
 )
 
 # 创建内置验证世界
-world = ToyWorld(seed=42, grid_size=10)
+world = ToyWorld(grid_length=10)
 world.reset(seed=42)
 
 # 提议-校验-执行闭环
-space = world.legal_actions()
-from worldloop_kernel import ActionProposal
-proposal = ActionProposal(
-    agent_id=space.agent_id, action_type=space.legal_actions[0].action_type,
+space = world.legal_actions(agent_id="agent_0")
+proposal = ActionProposal(          # 实际使用中可由 LLM/Policy 生成
+    agent_id=space.agent_id,
+    action_type=space.legal_actions[0].action_type,
     params=space.legal_actions[0].params,
-    proposed_at_tick=0, proposer="readme-example")
-assert world.validate_action(proposal)
+    proposed_at_tick=0, proposer="readme-example",
+)
+executed, receipt = world.validate_action(proposal)
+assert receipt.success
 
-transition = world.step(proposal)
-print(transition.transition_id, transition.state_after_hash)
+transition = world.step(executed)
+print(transition.tick, transition.state_after_hash)
 
 # checkpoint → restore → replay
 ckpt = world.checkpoint()
-world2 = ToyWorld.from_checkpoint(ckpt)
+world2 = ToyWorld(grid_length=10)
+world2.restore(ckpt)
 ```
 
 ## 安装
