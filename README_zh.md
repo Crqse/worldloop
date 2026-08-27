@@ -105,7 +105,7 @@ print(after.meta.tick)                                # 1
 可信**的人用的基座。它生来就是为了四件具体的事：
 
 1. **让多智能体运行可逐 tick 复现。**
-   用种子里化一个世界、把每次转移记录进哈希链、在另一台机器上重放同一
+   用种子初始化一个世界、把每次转移记录进哈希链、在另一台机器上重放同一
    初始状态，断言两次运行的 state hash 逐字节一致。这能把"仿真结论"
    变成"评审可以亲自重跑"的东西，而不是让你空口信任。
 
@@ -140,7 +140,7 @@ WorldLoop。如果你需要**重放、分叉、审计或导出** Agent 做过什
 | `worldloop-data` | 0.1.3 | 策略池/rollout/反事实/覆盖率/泄漏检查/导出/LLM 策略/评估 | 可选 |
 
 依赖方向固定：`kernel ← scenarios`、`kernel ← adapters`、`kernel+scenarios ← data`。
-四个包不依赖五层原生世界（`current/worldloop/` 为早期的 v1 实现）。
+（开发树中另有一个早期五层研究原型，与本四包无依赖关系。）
 
 ### 功能清单（v0.1.3 实证）
 
@@ -154,7 +154,7 @@ Diff/Apply、状态哈希链、invariant 检查与 quarantine、Checkpoint/resto
 与 `examples/assets/` 可视化资产（架构图 SVG、动画 GIF、交互式 Web demo）。
 
 **adapters**：PettingZoo Parallel、Gymnasium、OpenEnv 三套环境 → 内核协议，
-含动作映射、状态映射、checkpoint 映射与能力声明；只有支持完整状态+RNN 保存
+含动作映射、状态映射、checkpoint 映射与能力声明；只有支持完整状态+RNG 保存
 恢复的环境才能声明 exact restore。
 
 **data**：策略池（scripted/adversarial/LLM）、rollout 调度、覆盖率调度、

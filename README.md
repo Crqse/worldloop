@@ -161,8 +161,8 @@ was the source of truth — it is aimed at you.
 | `worldloop-data` | 0.1.3 | policy pool / rollout / counterfactual / coverage / leakage / export / LLM policy / eval | optional |
 
 Dependency direction is fixed: `kernel ← scenarios`, `kernel ← adapters`,
-`kernel + scenarios ← data`. The four packages do not depend on the five-layer
-native world (`current/worldloop/` is an earlier v1 implementation).
+`kernel + scenarios ← data`. (An earlier five-layer research prototype
+exists in the development tree; it is unrelated to these packages.)
 
 ### Feature highlights (as of v0.1.3)
 
