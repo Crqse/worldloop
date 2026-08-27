@@ -113,6 +113,44 @@ boundary constraint is *faithfully executed* rather than silently clamped
 (no clamp in `capability`, the world won't add one for you).
 
 ---
+## What you can actually do with it
+
+Not another chat-history agent framework. WorldLoop is a substrate for
+people who need the *trajectory itself* to be trustworthy. Four concrete
+jobs it is built for:
+
+1. **Reproduce a multi-agent run tick-for-tick.**
+   Seed a world, record every transition into a hash chain, replay the
+   exact same start-state on another machine, and assert the two runs
+   produce byte-identical state hashes. This turns a simulation claim into
+   something a reviewer can re-run, not something you have to trust.
+
+2. **Run real counterfactual experiments on agent behaviour.**
+   From one checkpoint, fork the world into branches that differ in a
+   single action ("what if the leader agent *repairs* instead of
+   *patrols* at tick 5?"), settle both deterministically, and compare the
+   resulting states. This is the core primitive behind policy A/B,
+   counterfactual data generation, and causal "what mattered" questions.
+
+3. **Generate leakage-checked trajectory datasets for training.**
+   Schedule policies (scripted / adversarial / LLM) across seeds, branch
+   counterfactually, and export structured episodes with a *leakage
+   report* that flags absolute paths, API keys, cache state, and PII in
+   prompts — so you know what a downstream model is actually being fed.
+
+4. **Wrap RL environments (PettingZoo / Gymnasium) under the same
+   authority contract.**
+   Drive an external MARL environment through the same
+   propose → validate → settle → record pipeline, so an LLM or policy can
+   act in Simple Spread / Simple Tag but can *never* bypass a legality or
+   cost rule to write state directly.
+
+If your work is "agents that talk in a loop and print a transcript", you
+don't need WorldLoop. If you need to **replay, branch, audit, or
+export** what agents did — and to prove the environment, not the model,
+was the source of truth — it is aimed at you.
+
+---
 ## The four packages
 
 | Package | Version | Role | Deps |
