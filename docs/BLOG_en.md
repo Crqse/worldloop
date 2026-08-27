@@ -131,5 +131,5 @@ pytest worldloop-kernel/tests worldloop-scenarios/tests \
 
 *If you are building "agents that act", the most underrated engineering
 decision is: who gets to be the judge. We think the environment should be.
-Open issues, or email 1148395497@qq.com — happy to talk about paid integration
-support, technical support subscriptions, or custom development.*
+Issues, scenario YAMLs, and questions are very welcome on
+[GitHub](https://github.com/Crqse/worldloop).*

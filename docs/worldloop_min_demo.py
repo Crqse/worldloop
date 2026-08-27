@@ -1,7 +1,9 @@
 """WorldLoop gist demo: agents propose, the world adjudicates (PettingZoo).
 
-Run:
-    pip install worldloop-kernel "worldloop-adapters[pettingzoo]"
+Prereqs (packages are not on PyPI yet; install from a clone):
+    git clone https://github.com/Crqse/worldloop.git
+    cd worldloop
+    python -m pip install -e ./worldloop-kernel -e "./worldloop-adapters[pettingzoo]"
     python worldloop_min_demo.py
 """
 from worldloop_adapters.pettingzoo import (

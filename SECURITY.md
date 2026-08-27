@@ -26,10 +26,3 @@ Security-relevant issues in this project tend to be about **state
 transition safety**: e.g. an agent action bypasses a cost check, hash
 chain verification passes on corrupted traces, or replay produces a
 different state than the original tick. Those get high priority.
-
-## Paid support / integration
-
-Security advisories and priority patches for commercial deployments are
-covered under the **paid integration support / technical support**
-channel — same email <1148395497@qq.com> with "WorldLoop support SLA" in
-the subject.

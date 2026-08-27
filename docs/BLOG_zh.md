@@ -117,5 +117,5 @@ pytest worldloop-kernel/tests worldloop-scenarios/tests \
 ---
 
 *如果你在做「会行动的 Agent」，最被低估的工程决策是：谁来做裁判。我们觉得
-应该是环境（世界）。欢迎提交 issue，或发邮件至 1148395497@qq.com —— 也愿意
-聊聊付费集成、技术支持订阅与定制开发。*
+应该是环境（世界）。欢迎在 [GitHub](https://github.com/Crqse/worldloop)
+提 issue、贡献场景 YAML 或交流讨论。*

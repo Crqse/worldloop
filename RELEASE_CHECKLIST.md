@@ -18,10 +18,9 @@
 - [ ] No README link points at `current/`, `research/`, or other
       mother-repo paths.
 - [ ] `docs/CLAIMS.md` only references files present in the release tree.
-- [ ] Commercial segment in README uses the "MIT already allows commercial
-      use; this channel covers paid integration support, technical
-      support subscriptions, and custom development work" wording — NOT
-      the contradictory "MIT + commercial licensing" phrasing.
+- [ ] README install instructions point at a **source clone** (the packages
+      are not on PyPI yet); no "paid support / commercial licensing" line
+      is present while the project has no users.
 
 ## 3. Topics + Pages
 

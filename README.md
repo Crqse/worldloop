@@ -60,26 +60,17 @@ Try the interactive version — open `examples/assets/emergency_scheduling.html`
 ---
 ## Quick install
 
-Requires Python ≥ 3.10.
-
-**From PyPI (after release):**
+Requires Python ≥ 3.10. The packages are not on PyPI yet — install from a
+clone (editable installs are recommended for the beta):
 
 ```bash
+git clone https://github.com/Crqse/worldloop.git
+cd worldloop
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install worldloop-kernel worldloop-scenarios
-# optional
-pip install "worldloop-adapters[pettingzoo]"        # external env adapters
-pip install "worldloop-data[evaluation,external]"   # trajectory data pipeline
-```
-
-**From source (before release / to run examples):**
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install ./worldloop-kernel
-pip install "./worldloop-adapters[pettingzoo]"      # optional
-pip install ./worldloop-scenarios
-pip install "./worldloop-data[evaluation,external]" # optional
+python -m pip install -e ./worldloop-kernel -e ./worldloop-scenarios
+# optional:
+python -m pip install -e "./worldloop-adapters[pettingzoo]"  # external env adapters
+python -m pip install -e "./worldloop-data[evaluation]"      # trajectory data pipeline
 ```
 
 Running the demo (`examples/demo/emergency_demo.py`) only needs
@@ -198,10 +189,9 @@ Contributions welcome — writing a YAML scenario is the fastest on-ramp, see
 
 - 冯福 (Fu Feng), aka **cqq** — GitHub [@Crqse](https://github.com/Crqse) ·
   <1148395497@qq.com>
-- **Commercial licensing / custom development** — contact <1148395497@qq.com>.
-  MIT already allows commercial use; this channel covers **paid
-  integration support, technical support subscriptions, and custom
-  development work**.
+
+Feedback, bug reports, and scenario YAML contributions are welcome via
+GitHub Issues.
 
 ## License
 

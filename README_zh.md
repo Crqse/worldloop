@@ -49,26 +49,16 @@ REPAIR 每次 −0.5，动作真实消耗能量。所有节点状态、设施状
 ---
 ## 快速安装
 
-要求 Python ≥ 3.10。
-
-**从 PyPI（发布后）：**
+要求 Python ≥ 3.10。四个包**暂未发布到 PyPI**，请从仓库克隆安装（beta 阶段建议用可编辑安装）：
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install worldloop-kernel worldloop-scenarios
-# 可选
-pip install "worldloop-adapters[pettingzoo]"        # 外部环境适配
-pip install "worldloop-data[evaluation,external]"   # 轨迹数据流水线
-```
-
-**从源码构建（发布前 / 想跑 examples）：**
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install ./worldloop-kernel
-pip install "./worldloop-adapters[pettingzoo]"      # 可选
-pip install ./worldloop-scenarios
-pip install "./worldloop-data[evaluation,external]" # 可选
+git clone https://github.com/Crqse/worldloop.git
+cd worldloop
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python -m pip install -e ./worldloop-kernel -e ./worldloop-scenarios
+# 可选：
+python -m pip install -e "./worldloop-adapters[pettingzoo]"  # 外部环境适配
+python -m pip install -e "./worldloop-data[evaluation]"      # 轨迹数据流水线
 ```
 
 运行演示（`examples/demo/emergency_demo.py`）只需 kernel + scenarios；
@@ -171,8 +161,8 @@ Contributions welcome —— 从「写一个 YAML 场景」开始是最快上手
 
 - 冯福，昵称 **cqq** — GitHub [@Crqse](https://github.com/Crqse) ·
   <1148395497@qq.com>
-- **付费集成 / 技术支持 / 定制开发** —— 联系 <1148395497@qq.com>。
-  MIT 本身即允许商用；该渠道专门承接 **付费集成、技术支持订阅与定制开发**。
+
+欢迎通过 GitHub Issues 反馈问题、报告 bug，或贡献新的场景 YAML。
 
 ## License
 
